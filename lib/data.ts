@@ -280,6 +280,7 @@ export const timeQuickOptions = [
   { id: 'day_before', label: '前天', description: '' },
   { id: 'this_week', label: '这周内', description: '3-7天前' },
   { id: 'longer', label: '更久之前', description: '超过一周' },
+  { id: 'custom', label: '其他时间', description: '自定义' },
 ];
 
 // ==================== 搜索时长选项 ====================

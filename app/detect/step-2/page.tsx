@@ -8,6 +8,7 @@ import Link from "next/link"
 import { Header } from "@/components/shared"
 import { useSearchStore } from "@/lib/store"
 import { timeQuickOptions } from "@/lib/data"
+import { InteractiveFog } from "@/components/ui/interactive-fog"
 
 export default function Step2Page() {
   const router = useRouter()
@@ -22,10 +23,21 @@ export default function Step2Page() {
   const canProceed = quickSelect || selectedDate || inputMode === 'unknown'
 
   const handleQuickSelect = (optionId: string) => {
-    setQuickSelect(optionId)
-    setSelectedDate('')
-    setSelectedTime('')
-    setInputMode('quick')
+    if (optionId === 'custom') {
+      // "其他时间"选项 - 清空快速选择，让用户使用精确时间输入
+      setQuickSelect('')
+      setInputMode('precise')
+      // 滚动到精确时间输入框
+      setTimeout(() => {
+        const preciseInput = document.querySelector('input[type="date"]') as HTMLInputElement
+        preciseInput?.focus()
+      }, 100)
+    } else {
+      setQuickSelect(optionId)
+      setSelectedDate('')
+      setSelectedTime('')
+      setInputMode('quick')
+    }
   }
 
   const handlePreciseDate = (date: string) => {
@@ -55,10 +67,11 @@ export default function Step2Page() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
+      <InteractiveFog color="59, 130, 246" />
       <Header currentStep={2} showProgress />
 
-      <main className="flex-1 container mx-auto px-4 py-8 md:py-12">
+      <main className="flex-1 container mx-auto px-4 py-8 md:py-12 relative z-10">
         <div className="max-w-2xl mx-auto space-y-8">
           {/* Page Title */}
           <div className="text-center space-y-3">

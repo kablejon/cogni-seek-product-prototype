@@ -7,6 +7,7 @@ import Link from "next/link"
 import { useSearchStore } from "@/lib/store"
 import { getDefaultAnalysisResult } from "@/lib/ai-service"
 import { itemCategories } from "@/lib/data"
+import { InteractiveFog } from "@/components/ui/interactive-fog"
 
 export default function ResultPage() {
   const { session, analysisResult } = useSearchStore()
@@ -61,7 +62,8 @@ export default function ResultPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      <InteractiveFog color="6, 182, 212" />
       {/* Header */}
       <header className="sticky top-0 z-50 glass border-b border-border/50">
         <div className="container mx-auto px-4 py-3 flex justify-between items-center">
@@ -75,7 +77,7 @@ export default function ResultPage() {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8 md:py-12">
+      <main className="container mx-auto px-4 py-8 md:py-12 relative z-10">
         <div className="max-w-2xl mx-auto space-y-8">
           {/* Success Indicator */}
           <div className="text-center space-y-4">

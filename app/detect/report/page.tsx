@@ -7,6 +7,7 @@ import Link from "next/link"
 import { useSearchStore } from "@/lib/store"
 import { getDefaultAnalysisResult } from "@/lib/ai-service"
 import { itemCategories, locationCategories, activityCategories, moodOptions } from "@/lib/data"
+import { InteractiveFog } from "@/components/ui/interactive-fog"
 
 // 社交平台图标组件
 const TwitterIcon = () => (
@@ -294,7 +295,8 @@ ${result.encouragement}
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      <InteractiveFog color="16, 185, 129" />
       {/* Header */}
       <header className="sticky top-0 z-50 glass border-b border-border/50">
         <div className="container mx-auto px-4 py-3 flex justify-between items-center">
@@ -328,7 +330,7 @@ ${result.encouragement}
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8 md:py-12">
+      <main className="container mx-auto px-4 py-8 md:py-12 relative z-10">
         <div ref={reportRef} className="max-w-4xl mx-auto space-y-8">
           {/* Header */}
           <div className="text-center space-y-3">
@@ -575,14 +577,16 @@ ${result.encouragement}
 
           {/* Cognitive Override */}
           {result.cognitiveOverride && (
-            <div className="bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800/50 rounded-2xl p-6">
+            <div className="bg-card rounded-2xl border border-border/50 p-6 card-shadow">
               <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 w-11 h-11 rounded-full bg-purple-100 dark:bg-purple-900/50 flex items-center justify-center">
+                <div className="flex-shrink-0 w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center">
                   <span className="text-xl">🧠</span>
                 </div>
-                <div>
-                  <h3 className="font-semibold mb-2 text-purple-700 dark:text-purple-300">认知覆盖指令</h3>
-                  <p className="text-muted-foreground leading-relaxed italic">"{result.cognitiveOverride}"</p>
+                <div className="flex-1">
+                  <h3 className="font-bold mb-3">认知覆盖指令</h3>
+                  <div className="bg-secondary/30 rounded-xl p-4">
+                    <p className="text-muted-foreground leading-relaxed italic">"{result.cognitiveOverride}"</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -637,12 +641,18 @@ ${result.encouragement}
 
             {/* Stop Condition */}
             {result.stopCondition && (
-              <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50">
+              <div className="p-4 rounded-xl bg-secondary/30 border border-border/50 relative overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-chart-3/50 via-chart-3/30 to-transparent"></div>
                 <div className="flex items-start gap-3">
-                  <span className="text-lg">⚠️</span>
-                  <div>
-                    <h4 className="font-semibold text-amber-700 dark:text-amber-300 mb-1">如果仍未找到</h4>
-                    <p className="text-sm text-muted-foreground">{result.stopCondition}</p>
+                  <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-chart-3/10 flex items-center justify-center">
+                    <span className="text-base">⚠️</span>
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-semibold mb-2 flex items-center gap-2">
+                      <span className="text-chart-3">●</span>
+                      <span>如果仍未找到</span>
+                    </h4>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{result.stopCondition}</p>
                   </div>
                 </div>
               </div>

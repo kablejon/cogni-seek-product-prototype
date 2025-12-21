@@ -10,6 +10,7 @@ import Link from "next/link"
 import { Header } from "@/components/shared"
 import { useSearchStore } from "@/lib/store"
 import { locationCategories } from "@/lib/data"
+import { InteractiveFog } from "@/components/ui/interactive-fog"
 
 export default function Step3Page() {
   const router = useRouter()
@@ -73,10 +74,11 @@ export default function Step3Page() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
+      <InteractiveFog color="99, 102, 241" />
       <Header currentStep={3} showProgress />
 
-      <main className="flex-1 container mx-auto px-4 py-8 md:py-12">
+      <main className="flex-1 container mx-auto px-4 py-8 md:py-12 relative z-10">
         <div className="max-w-3xl mx-auto space-y-8">
           {/* Page Title */}
           <div className="text-center space-y-3">

@@ -4,7 +4,8 @@ import { useEffect, useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { useSearchStore } from "@/lib/store"
-import { getDefaultAnalysisResult, buildAnalysisPrompt } from "@/lib/ai-service"
+import { getDefaultAnalysisResult } from "@/lib/ai-service"
+import { InteractiveFog } from "@/components/ui/interactive-fog"
 
 const analysisSteps = [
   { text: "正在构建时空坐标系统...", icon: "🌐" },
@@ -90,12 +91,23 @@ export default function LoadingPage() {
       setStatusText("正在连接分析服务...")
       
       try {
-        const prompt = buildAnalysisPrompt(session)
-        
+        // V7.0: 直接发送 session 数据，让 API 进行万物分类
         const response = await fetch('/api/analyze', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt }),
+          body: JSON.stringify({
+            itemType: session.itemType,
+            itemName: session.itemCustomName || session.itemType,
+            itemDescription: `${session.itemCategory} - ${session.itemColor} - ${session.itemSize}`,
+            lastSeenLocation: session.specificLocation || session.locationCategory,
+            lastSeenTime: session.lastSeenDate || session.timeQuickSelect,
+            activity: session.specificActivity || session.activityCategory,
+            mood: session.mood,
+            searchedPlaces: session.searchedLocations,
+            wasDistracted: session.wasDistracted,
+            hadCompanions: session.hadCompanions,
+            searchDuration: session.searchDuration,
+          }),
         })
 
         hasCalledRef.current = true
@@ -147,9 +159,10 @@ export default function LoadingPage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
+      <InteractiveFog color="129, 140, 248" />
       {/* Header */}
-      <header className="border-b border-border/50 glass">
+      <header className="border-b border-border/50 glass relative z-10">
         <div className="container mx-auto px-4 py-3 flex justify-center items-center">
           <Link href="/" className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center">
@@ -161,7 +174,7 @@ export default function LoadingPage() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 flex items-center justify-center p-4">
+      <main className="flex-1 flex items-center justify-center p-4 relative z-10">
         <div className="max-w-lg w-full space-y-12">
           {/* Animated Radar */}
           <div className="flex justify-center">
