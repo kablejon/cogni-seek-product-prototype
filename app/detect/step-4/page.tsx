@@ -3,283 +3,295 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { ArrowRight, ArrowLeft, ChevronDown, ChevronUp, Users, Check } from "lucide-react"
-import Link from "next/link"
-import { Header } from "@/components/shared"
+import { ChevronRight, ChevronLeft, Brain, Check, AlertCircle } from "lucide-react"
+import { Header } from "@/components/shared/header"
 import { useSearchStore } from "@/lib/store"
-import { activityCategories, moodOptions } from "@/lib/data"
 import { InteractiveFog } from "@/components/ui/interactive-fog"
+
+// 形容词标签 - 心理状态
+const MOOD_TAGS = [
+  { id: 'calm', label: '冷静', desc: '正常状态', color: 'from-blue-500/20 to-cyan-500/20' },
+  { id: 'rushed', label: '匆忙', desc: '赶时间', color: 'from-orange-500/20 to-yellow-500/20' },
+  { id: 'anxious', label: '焦急', desc: '紧张不安', color: 'from-red-500/20 to-orange-500/20' },
+  { id: 'tired', label: '疲惫', desc: '累了想休息', color: 'from-purple-500/20 to-indigo-500/20' },
+  { id: 'excited', label: '兴奋', desc: '激动开心', color: 'from-pink-500/20 to-rose-500/20' },
+  { id: 'distracted', label: '分心', desc: '注意力不集中', color: 'from-gray-500/20 to-slate-500/20' },
+]
+
+// 活动标签
+const ACTIVITY_TAGS = [
+  { id: 'working', label: '工作中', desc: '专注做事' },
+  { id: 'commuting', label: '通勤中', desc: '路上移动' },
+  { id: 'shopping', label: '购物', desc: '逛街买东西' },
+  { id: 'eating', label: '用餐', desc: '吃饭喝东西' },
+  { id: 'exercising', label: '运动', desc: '健身活动' },
+  { id: 'socializing', label: '社交', desc: '见朋友聚会' },
+  { id: 'relaxing', label: '休闲', desc: '放松娱乐' },
+  { id: 'cleaning', label: '整理', desc: '打扫收拾' },
+]
+
+// 注意力干扰选项
+const ATTENTION_DISTRACTIONS = [
+  { id: 'phone_call', label: '在打电话', icon: '📞' },
+  { id: 'chatting', label: '在聊天', icon: '💬' },
+  { id: 'looking_phone', label: '在看手机', icon: '📱' },
+  { id: 'thinking', label: '在想事情', icon: '💭' },
+  { id: 'multitasking', label: '在做多件事', icon: '⚡' },
+]
 
 export default function Step4Page() {
   const router = useRouter()
   const { session, updateSession } = useSearchStore()
   
-  const [selectedActivityCategory, setSelectedActivityCategory] = useState(session.activityCategory)
-  const [selectedActivity, setSelectedActivity] = useState(session.specificActivity)
-  const [activityCustom, setActivityCustom] = useState(session.activityCustom)
-  const [expandedCategory, setExpandedCategory] = useState<string | null>(null)
-  
-  const [selectedMood, setSelectedMood] = useState(session.mood)
-  const [moodCustom, setMoodCustom] = useState(session.moodCustom)
-  
-  const [wasDistracted, setWasDistracted] = useState(session.wasDistracted)
-  const [otherPeoplePresent, setOtherPeoplePresent] = useState(session.otherPeoplePresent)
+  const [selectedMood, setSelectedMood] = useState<string>(session.mood || '')
+  const [selectedActivity, setSelectedActivity] = useState<string>(session.specificActivity || '')
+  const [selectedDistractions, setSelectedDistractions] = useState<string[]>(
+    session.wasDistracted ? ['general'] : []
+  )
+  const [customActivity, setCustomActivity] = useState(session.activityCustom || '')
+  const [customMood, setCustomMood] = useState(session.moodCustom || '')
 
-  const isCustomActivity = selectedActivity.includes('other')
-  const isCustomMood = selectedMood === 'mood_other'
-
-  const canProceed = selectedActivity && selectedMood && 
-    (!isCustomActivity || activityCustom.trim()) &&
-    (!isCustomMood || moodCustom.trim())
-
-  const handleCategoryClick = (categoryId: string) => {
-    if (expandedCategory === categoryId) {
-      setExpandedCategory(null)
+  const handleDistractionToggle = (id: string) => {
+    if (selectedDistractions.includes(id)) {
+      setSelectedDistractions(selectedDistractions.filter(d => d !== id))
     } else {
-      setExpandedCategory(categoryId)
-      setSelectedActivityCategory(categoryId)
+      setSelectedDistractions([...selectedDistractions, id])
     }
-  }
-
-  const handleActivitySelect = (categoryId: string, activityId: string) => {
-    setSelectedActivityCategory(categoryId)
-    setSelectedActivity(activityId)
   }
 
   const handleNext = () => {
-    if (canProceed) {
-      updateSession({
-        activityCategory: selectedActivityCategory,
-        specificActivity: selectedActivity,
-        activityCustom,
-        mood: selectedMood,
-        moodCustom,
-        wasDistracted,
-        otherPeoplePresent,
-      })
-      router.push("/detect/step-5")
+    if (!selectedMood) {
+      alert('请选择当时的心理状态')
+      return
     }
-  }
+    if (!selectedActivity) {
+      alert('请选择当时的活动')
+      return
+    }
 
-  const getSelectedActivityLabel = () => {
-    if (!selectedActivity) return ''
-    const category = activityCategories.find(c => c.id === selectedActivityCategory)
-    const activity = category?.activities.find(a => a.id === selectedActivity)
-    if (isCustomActivity && activityCustom) return activityCustom
-    return activity?.label || ''
+    updateSession({
+      mood: selectedMood,
+      moodCustom: customMood,
+      specificActivity: selectedActivity,
+      activityCustom: customActivity,
+      activityCategory: 'general',
+      wasDistracted: selectedDistractions.length > 0,
+      otherPeoplePresent: false,
+    })
+
+    router.push('/detect/step-5')
   }
 
   return (
     <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
-      <InteractiveFog color="8, 145, 178" />
+      <div className="absolute inset-0 z-0">
+        <InteractiveFog color="8, 145, 178" />
+      </div>
+      
       <Header currentStep={4} showProgress />
 
       <main className="flex-1 container mx-auto px-4 py-8 md:py-12 relative z-10">
-        <div className="max-w-3xl mx-auto space-y-8">
+        <div className="max-w-4xl mx-auto space-y-10">
           {/* Page Title */}
           <div className="text-center space-y-3">
-            <h1 className="text-3xl md:text-4xl font-bold">行为快照</h1>
-            <p className="text-muted-foreground text-lg">当时你在做什么？状态如何？</p>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-2">
+              <Brain className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium text-primary">Step 4 of 5</span>
+            </div>
+            <h1 className="text-3xl md:text-4xl font-bold">状态还原</h1>
+            <p className="text-muted-foreground text-lg">
+              回想<span className="text-primary font-semibold">当时的心理状态</span>和<span className="text-primary font-semibold">行为模式</span>
+            </p>
           </div>
 
-          {/* Activity Section */}
+          {/* 心理状态 - 形容词标签 */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <span className="text-xl">🎬</span>
-              <span className="font-semibold">当时在做什么？</span>
+              <h2 className="font-bold text-lg">1. 当时的心理状态</h2>
+              <span className="text-destructive">*</span>
             </div>
-            
-            <div className="space-y-3">
-              {activityCategories.map((category) => (
-                <div 
-                  key={category.id} 
-                  className="bg-card rounded-2xl border border-border/50 overflow-hidden card-shadow transition-smooth hover:border-border"
-                >
-                  <button
-                    onClick={() => handleCategoryClick(category.id)}
-                    className={`w-full p-4 flex items-center justify-between transition-smooth ${
-                      selectedActivityCategory === category.id ? 'bg-primary/5' : 'hover:bg-secondary/50'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="text-xl">{category.icon}</span>
-                      <span className="font-medium">{category.label}</span>
-                      {selectedActivityCategory === category.id && selectedActivity && (
-                        <span className="text-sm text-primary bg-primary/10 px-3 py-1 rounded-full font-medium">
-                          {getSelectedActivityLabel()}
-                        </span>
-                      )}
-                    </div>
-                    {expandedCategory === category.id ? (
-                      <ChevronUp className="h-5 w-5 text-muted-foreground" />
-                    ) : (
-                      <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                    )}
-                  </button>
 
-                  {expandedCategory === category.id && (
-                    <div className="border-t border-border/50 p-4 bg-secondary/30">
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                        {category.activities.map((activity) => (
-                          <button
-                            key={activity.id}
-                            onClick={() => handleActivitySelect(category.id, activity.id)}
-                            className={`p-3 rounded-xl text-sm text-left transition-smooth flex items-center justify-between ${
-                              selectedActivity === activity.id
-                                ? 'bg-primary text-primary-foreground font-medium'
-                                : 'bg-card hover:bg-card/80 border border-border/50'
-                            }`}
-                          >
-                            <span>{activity.label}</span>
-                            {selectedActivity === activity.id && <Check className="h-4 w-4" />}
-                          </button>
-                        ))}
-                      </div>
-
-                      {selectedActivityCategory === category.id && isCustomActivity && (
-                        <div className="mt-4 p-4 rounded-xl bg-card border border-border/50 space-y-2">
-                          <Label htmlFor="activityCustom">请描述当时在做什么</Label>
-                          <Input
-                            id="activityCustom"
-                            placeholder="例如：在阳台浇花、给宠物喂食..."
-                            value={activityCustom}
-                            onChange={(e) => setActivityCustom(e.target.value)}
-                            className="h-11 rounded-xl"
-                          />
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Mood Section */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <span className="text-xl">💭</span>
-              <span className="font-semibold">当时的情绪/状态？</span>
-            </div>
-            
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-              {moodOptions.map((mood) => (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {MOOD_TAGS.map((mood) => (
                 <button
                   key={mood.id}
                   onClick={() => setSelectedMood(mood.id)}
-                  className={`p-4 rounded-xl text-center transition-smooth border card-shadow ${
+                  className={`relative p-4 rounded-xl border-2 transition-all duration-200 ${
                     selectedMood === mood.id
-                      ? 'bg-primary text-primary-foreground border-primary'
-                      : 'bg-card border-border/50 hover:border-border'
+                      ? 'border-primary bg-primary/10 shadow-lg scale-105'
+                      : 'border-border/50 bg-card/50 hover:border-primary/30 hover:bg-card'
                   }`}
                 >
-                  <div className="text-2xl mb-2">{mood.icon}</div>
-                  <div className="font-medium text-sm">{mood.label}</div>
+                  {selectedMood === mood.id && (
+                    <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                      <Check className="h-3 w-3 text-white" />
+                    </div>
+                  )}
+
+                  <div className="text-center">
+                    <div className="font-bold text-base mb-1">{mood.label}</div>
+                    <div className="text-xs text-muted-foreground">{mood.desc}</div>
+                  </div>
+
+                  {/* 渐变装饰 */}
+                  <div className={`absolute inset-0 bg-gradient-to-br ${mood.color} rounded-xl opacity-0 transition-opacity duration-300 ${
+                    selectedMood === mood.id ? 'opacity-100' : ''
+                  }`} style={{ zIndex: -1 }} />
                 </button>
               ))}
             </div>
 
-            {isCustomMood && (
-              <div className="p-4 rounded-xl bg-card border border-border/50 card-shadow space-y-2">
-                <Label htmlFor="moodCustom">请描述当时的状态</Label>
-                <Input
-                  id="moodCustom"
-                  placeholder="例如：专注于某件事、心不在焉..."
-                  value={moodCustom}
-                  onChange={(e) => setMoodCustom(e.target.value)}
-                  className="h-11 rounded-xl"
-                />
-              </div>
-            )}
+            {/* 自定义心情 */}
+            <div className="space-y-2">
+              <label className="text-sm text-muted-foreground">或者用自己的话描述（选填）</label>
+              <input
+                type="text"
+                value={customMood}
+                onChange={(e) => setCustomMood(e.target.value)}
+                placeholder="例如：很放松、有点烦躁、心不在焉..."
+                className="w-full px-4 py-2.5 rounded-xl border border-border/50 bg-background/50 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+              />
+            </div>
           </div>
 
-          {/* Additional Questions */}
-          <div className="bg-card rounded-2xl border border-border/50 p-6 card-shadow space-y-6">
-            <div className="flex items-center gap-2 pb-4 border-b border-border/50">
-              <span className="text-xl">📋</span>
-              <span className="font-semibold">补充信息</span>
+          {/* 活动状态 */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <h2 className="font-bold text-lg">2. 当时在做什么</h2>
+              <span className="text-destructive">*</span>
             </div>
 
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <Label className="text-base">当时是否在同时处理多件事？</Label>
-                <p className="text-sm text-muted-foreground">分心状态下更容易随手放置物品</p>
-              </div>
-              <div className="flex gap-2">
-                {[
-                  { value: false, label: '没有' },
-                  { value: true, label: '是的' },
-                ].map((option) => (
-                  <button
-                    key={String(option.value)}
-                    onClick={() => setWasDistracted(option.value)}
-                    className={`px-4 py-2 rounded-xl text-sm transition-smooth border ${
-                      wasDistracted === option.value
-                        ? 'bg-primary text-primary-foreground border-primary'
-                        : 'bg-background border-border/50 hover:border-border'
-                    }`}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {ACTIVITY_TAGS.map((activity) => (
+                <button
+                  key={activity.id}
+                  onClick={() => setSelectedActivity(activity.id)}
+                  className={`p-4 rounded-xl border-2 transition-all duration-200 ${
+                    selectedActivity === activity.id
+                      ? 'border-primary bg-primary/10 shadow-md scale-105'
+                      : 'border-border/50 bg-card/50 hover:border-primary/30 hover:bg-card'
+                  }`}
+                >
+                  <div className="text-center">
+                    <div className="font-semibold text-sm mb-1">{activity.label}</div>
+                    <div className="text-xs text-muted-foreground">{activity.desc}</div>
+                  </div>
+                </button>
+              ))}
             </div>
 
-            <div className="flex items-center justify-between">
-              <div className="space-y-1 flex items-start gap-3">
-                <Users className="h-5 w-5 text-muted-foreground mt-0.5" />
-                <div>
-                  <Label className="text-base">当时是否有其他人在场？</Label>
-                  <p className="text-sm text-muted-foreground">他们可能无意中移动了物品</p>
+            {/* 自定义活动 */}
+            <div className="space-y-2">
+              <label className="text-sm text-muted-foreground">或者自定义活动（选填）</label>
+              <input
+                type="text"
+                value={customActivity}
+                onChange={(e) => setCustomActivity(e.target.value)}
+                placeholder="例如：搬家、装修、开会..."
+                className="w-full px-4 py-2.5 rounded-xl border border-border/50 bg-background/50 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+              />
+            </div>
+          </div>
+
+          {/* 注意力状态 - 核心新功能 */}
+          <div className="space-y-4">
+            <div className="bg-gradient-to-r from-chart-3/10 to-orange-500/10 border-2 border-chart-3/20 rounded-2xl p-6 space-y-4">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="h-5 w-5 text-chart-3 mt-0.5 flex-shrink-0" />
+                <div className="flex-1">
+                  <h3 className="font-bold text-lg mb-1">3. 注意力状态 <span className="text-xs font-normal text-muted-foreground">(选填但重要)</span></h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    💡 这是心理学寻物的核心依据："非注意盲视"会导致物品被遗忘在意想不到的地方
+                  </p>
+
+                  <div className="space-y-3">
+                    <p className="text-sm font-medium">当时是否分心？（可多选）</p>
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                      {ATTENTION_DISTRACTIONS.map((distraction) => {
+                        const isSelected = selectedDistractions.includes(distraction.id)
+                        return (
+                          <button
+                            key={distraction.id}
+                            onClick={() => handleDistractionToggle(distraction.id)}
+                            className={`p-3 rounded-xl border transition-all duration-200 ${
+                              isSelected
+                                ? 'border-chart-3 bg-chart-3/10 shadow-sm'
+                                : 'border-border/50 bg-background/50 hover:border-chart-3/30'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="text-lg">{distraction.icon}</span>
+                              <span className="text-sm font-medium">{distraction.label}</span>
+                              {isSelected && <Check className="h-4 w-4 ml-auto text-chart-3" />}
+                            </div>
+                          </button>
+                        )
+                      })}
+                    </div>
+
+                    {selectedDistractions.length > 0 && (
+                      <div className="p-3 rounded-xl bg-chart-3/10 border border-chart-3/20">
+                        <p className="text-sm text-center">
+                          <span className="font-bold text-chart-3">分心状态已记录</span>
+                          <span className="text-muted-foreground ml-2">
+                            AI 会重点分析"自动驾驶"行为和视觉盲区
+                          </span>
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-              <div className="flex gap-2">
-                {[
-                  { value: false, label: '没有' },
-                  { value: true, label: '有' },
-                ].map((option) => (
-                  <button
-                    key={String(option.value)}
-                    onClick={() => setOtherPeoplePresent(option.value)}
-                    className={`px-4 py-2 rounded-xl text-sm transition-smooth border ${
-                      otherPeoplePresent === option.value
-                        ? 'bg-primary text-primary-foreground border-primary'
-                        : 'bg-background border-border/50 hover:border-border'
-                    }`}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
             </div>
-          </div>
-
-          {/* Tip Box */}
-          <div className="bg-primary/5 border border-primary/20 rounded-xl p-4">
-            <p className="text-sm text-muted-foreground">
-              <span className="text-primary font-medium">🧠 科学依据：</span>
-              心理学研究表明，情绪与注意力状态会显著影响物品放置的位置与方式。
-            </p>
           </div>
 
           {/* Navigation */}
-          <div className="flex justify-between items-center pt-4">
-            <Button asChild variant="ghost" className="rounded-xl">
-              <Link href="/detect/step-3">
-                <ArrowLeft className="mr-2 h-5 w-5" /> 上一步
-              </Link>
-            </Button>
-            <Button 
-              onClick={handleNext} 
-              disabled={!canProceed} 
-              size="lg" 
-              className="px-8 rounded-xl card-shadow"
+          <div className="flex items-center justify-between pt-4">
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() => router.back()}
+              className="rounded-full"
             >
-              下一步 <ArrowRight className="ml-2 h-5 w-5" />
+              <ChevronLeft className="mr-2 h-5 w-5" />
+              上一步
+            </Button>
+
+            <Button
+              size="lg"
+              onClick={handleNext}
+              className="rounded-full px-8"
+              disabled={!selectedMood || !selectedActivity}
+            >
+              继续下一步
+              <ChevronRight className="ml-2 h-5 w-5" />
             </Button>
           </div>
+
+          {/* 当前选择提示 */}
+          {selectedMood && selectedActivity && (
+            <div className="text-center p-4 rounded-xl bg-secondary/30 border border-border/50 animate-in fade-in duration-500">
+              <p className="text-sm text-muted-foreground">
+                当前状态：
+                <span className="font-semibold text-foreground ml-2">
+                  {MOOD_TAGS.find(m => m.id === selectedMood)?.label || customMood}
+                </span>
+                <span className="text-muted-foreground mx-2">·</span>
+                <span className="font-semibold text-foreground">
+                  {ACTIVITY_TAGS.find(a => a.id === selectedActivity)?.label || customActivity}
+                </span>
+                {selectedDistractions.length > 0 && (
+                  <>
+                    <span className="text-muted-foreground mx-2">·</span>
+                    <span className="text-chart-3 font-semibold">
+                      {selectedDistractions.length}个分心因素
+                    </span>
+                  </>
+                )}
+              </p>
+            </div>
+          )}
         </div>
       </main>
     </div>

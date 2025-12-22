@@ -53,6 +53,7 @@ export interface SearchSession {
   itemCustomName: string;
   itemColor: string;
   itemSize: 'small' | 'medium' | 'large' | '';
+  itemFeatures: string; // 特征指纹：划痕、贴纸、保护套等
   hasSound: boolean | null;
   hasCase: boolean | null;
 
@@ -95,6 +96,7 @@ export const initialSearchSession: SearchSession = {
   itemCustomName: '',
   itemColor: '',
   itemSize: '',
+  itemFeatures: '',
   hasSound: null,
   hasCase: null,
 
