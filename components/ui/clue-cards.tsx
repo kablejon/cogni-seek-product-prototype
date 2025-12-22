@@ -55,27 +55,63 @@ export function ClueCards({ psychologyBlindSpot, predictions, checklist, onUnloc
         </div>
       </div>
 
-      {/* Card 2: 具体坐标 (付费解锁) */}
-      <div className={`relative rounded-3xl overflow-hidden border-2 ${isUnlocked ? 'border-chart-2/30 bg-gradient-to-br from-chart-2/10 to-cyan-500/10' : 'border-border/50 bg-card'}`}>
+      {/* Card 2: 具体坐标 (付费解锁 - 黑金风格) */}
+      <div className={`relative rounded-3xl overflow-hidden border-2 ${
+        isUnlocked 
+          ? 'border-[var(--cyber-green)]/30 bg-gradient-to-br from-[var(--cyber-green)]/10 to-cyan-500/10' 
+          : 'border-border/50 bg-card'
+      }`}>
         {!isUnlocked && (
-          <div className="absolute inset-0 backdrop-blur-md bg-background/80 z-10 flex flex-col items-center justify-center p-8 text-center">
-            <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mb-4">
-              <Lock className="h-8 w-8 text-primary" />
+          <div className="absolute inset-0 backdrop-blur-xl z-10 flex flex-col items-center justify-center p-8 text-center"
+               style={{
+                 background: 'radial-gradient(ellipse at center, rgba(20, 20, 30, 0.95) 0%, rgba(10, 10, 15, 0.98) 100%)',
+               }}>
+            {/* 黑金锁头 */}
+            <div className="relative w-20 h-20 mb-6">
+              {/* 金色光环 */}
+              <div className="absolute inset-0 rounded-full animate-pulse-wave"
+                   style={{
+                     background: 'radial-gradient(circle, rgba(255, 215, 0, 0.3) 0%, transparent 70%)',
+                   }} />
+              
+              {/* 锁头主体 - 黑金渐变 */}
+              <div className="relative w-20 h-20 rounded-full flex items-center justify-center"
+                   style={{
+                     background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #FFD700 100%)',
+                     boxShadow: '0 0 30px rgba(255, 215, 0, 0.5), inset 0 2px 10px rgba(255, 215, 0, 0.3)',
+                   }}>
+                <Lock className="h-9 w-9 text-yellow-400 drop-shadow-lg" />
+              </div>
             </div>
-            <h4 className="text-xl font-bold mb-2">解锁精准坐标</h4>
-            <p className="text-muted-foreground mb-6 max-w-sm">
+            
+            <h4 className="text-2xl font-bold mb-2 bg-gradient-to-r from-yellow-300 to-yellow-600 bg-clip-text text-transparent">
+              解锁精准坐标
+            </h4>
+            <p className="text-muted-foreground mb-6 max-w-sm text-sm">
               获取 AI 计算的 3 个最可能位置，包含详细搜索技巧和概率排序
             </p>
-            <Button 
-              size="lg" 
+            
+            {/* 黑金按钮 */}
+            <button
               onClick={handleUnlock}
-              className="rounded-full px-8"
+              className="relative px-10 py-4 rounded-full font-bold text-base overflow-hidden group"
+              style={{
+                background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #FFD700 100%)',
+                color: '#FFD700',
+                boxShadow: '0 0 20px rgba(255, 215, 0, 0.5), inset 0 1px 3px rgba(255, 255, 255, 0.3)',
+              }}
             >
-              立即解锁 ¥2.99
-              <ChevronRight className="ml-2 h-5 w-5" />
-            </Button>
-            <p className="text-xs text-muted-foreground mt-4">
-              87.3% 的用户在解锁后找到了失物
+              <span className="relative z-10 flex items-center gap-2">
+                立即解锁 <span className="text-white">¥2.99</span>
+                <ChevronRight className="h-5 w-5" />
+              </span>
+              
+              {/* 悬停光效 */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+            </button>
+            
+            <p className="text-xs text-muted-foreground mt-4 font-mono">
+              🔓 87.3% 的用户在解锁后找到了失物
             </p>
           </div>
         )}
@@ -128,19 +164,24 @@ export function ClueCards({ psychologyBlindSpot, predictions, checklist, onUnloc
         </div>
       </div>
 
-      {/* Card 3: 游戏化排查清单 */}
-      <div className="bg-gradient-to-br from-chart-3/10 to-orange-500/10 border-2 border-chart-3/30 rounded-3xl p-6 md:p-8 card-shadow">
-        <div className="flex items-start gap-4 mb-4">
-          <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-chart-3/20 flex items-center justify-center">
-            <CheckSquare className="h-6 w-6 text-chart-3" />
+      {/* Card 3: 游戏化排查清单 - 科幻任务条 */}
+      <div className="scifi-container p-6 md:p-8">
+        <div className="flex items-start gap-4 mb-6">
+          <div className="flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center relative"
+               style={{
+                 background: 'linear-gradient(135deg, var(--holo-blue) 0%, var(--cyber-green) 100%)',
+                 boxShadow: '0 0 20px var(--holo-blue-glow)',
+               }}>
+            <CheckSquare className="h-6 w-6 text-black" />
+            <div className="scan-line" />
           </div>
           <div>
-            <h3 className="text-xl font-bold mb-1">✅ 科学排查清单</h3>
-            <p className="text-sm text-muted-foreground">逐个排除，概率自动转移</p>
+            <h3 className="text-xl font-bold mb-1">🎯 任务清单</h3>
+            <p className="text-xs text-muted-foreground font-mono">MISSION CHECKLIST - PROBABILITY TRANSFER ENABLED</p>
           </div>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-3">
           {checklist.map((item, index) => {
             const isChecked = checkedItems.has(index)
             const isExcluded = checkedItems.size > 0 && !isChecked
@@ -148,50 +189,113 @@ export function ClueCards({ psychologyBlindSpot, predictions, checklist, onUnloc
             return (
               <div
                 key={index}
-                className={`group relative rounded-xl border transition-all duration-300 ${
+                className={`group relative rounded-xl overflow-hidden transition-all duration-300 ${
                   isChecked 
-                    ? 'border-muted bg-muted/30 opacity-50' 
-                    : isExcluded
-                    ? 'border-chart-3/40 bg-chart-3/10 shadow-sm'
-                    : 'border-border/50 bg-background/50 hover:border-chart-3/30 hover:bg-chart-3/5'
+                    ? 'opacity-40' 
+                    : ''
                 }`}
+                style={{
+                  background: isChecked 
+                    ? 'rgba(255, 255, 255, 0.02)'
+                    : isExcluded
+                      ? 'rgba(0, 255, 157, 0.08)'
+                      : 'rgba(255, 255, 255, 0.05)',
+                  border: isChecked
+                    ? '1px solid rgba(255, 255, 255, 0.05)'
+                    : isExcluded
+                      ? '2px solid var(--cyber-green)'
+                      : '1px solid rgba(255, 255, 255, 0.1)',
+                  boxShadow: isExcluded && !isChecked ? '0 0 15px var(--cyber-green-glow)' : 'none',
+                }}
               >
-                <label className="flex items-center gap-3 p-4 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={isChecked}
-                    onChange={() => handleCheck(index)}
-                    className="w-5 h-5 rounded border-2 border-chart-3/50 text-chart-3 focus:ring-chart-3 focus:ring-offset-0"
-                  />
-                  <span className={`flex-1 text-sm ${isChecked ? 'line-through text-muted-foreground' : ''}`}>
+                <label className="flex items-center gap-3 p-4 cursor-pointer relative z-10">
+                  {/* 科幻复选框 */}
+                  <div className="relative w-5 h-5 flex-shrink-0">
+                    <input
+                      type="checkbox"
+                      checked={isChecked}
+                      onChange={() => handleCheck(index)}
+                      className="sr-only"
+                    />
+                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
+                      isChecked 
+                        ? 'bg-[var(--cyber-green)] border-[var(--cyber-green)]'
+                        : 'border-white/30 bg-white/5'
+                    }`}>
+                      {isChecked && (
+                        <svg className="w-3 h-3 text-black font-bold" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <span className={`flex-1 text-sm font-medium ${
+                    isChecked 
+                      ? 'line-through text-muted-foreground' 
+                      : 'text-white'
+                  }`}>
                     {item}
                   </span>
+                  
+                  {/* 概率转移提示 */}
                   {isExcluded && !isChecked && (
-                    <span className="text-xs font-medium text-chart-3 animate-pulse">
-                      +{Math.round(10 / (checklist.length - checkedItems.size))}% 概率转移
+                    <span className="text-xs font-mono font-bold px-2 py-1 rounded-full animate-pulse"
+                          style={{
+                            color: 'var(--cyber-green)',
+                            background: 'rgba(0, 255, 157, 0.15)',
+                            border: '1px solid var(--cyber-green)',
+                          }}>
+                      +{Math.round(10 / (checklist.length - checkedItems.size))}% ↑
                     </span>
                   )}
                 </label>
+
+                {/* 进度条效果 */}
+                {isChecked && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--cyber-green)]" 
+                       style={{ boxShadow: '0 0 10px var(--cyber-green-glow)' }} />
+                )}
               </div>
             )
           })}
         </div>
 
+        {/* 进度状态提示 */}
         {checkedItems.size > 0 && checkedItems.size < checklist.length && (
-          <div className="mt-4 p-4 rounded-xl bg-chart-3/10 border border-chart-3/20">
-            <p className="text-sm text-center">
-              <span className="font-bold text-chart-3">已排除 {checkedItems.size}/{checklist.length}</span>
-              <span className="text-muted-foreground ml-2">
-                剩余位置的概率正在提升...
+          <div className="mt-6 p-4 rounded-xl relative overflow-hidden"
+               style={{
+                 background: 'rgba(0, 255, 157, 0.1)',
+                 border: '2px solid var(--cyber-green)',
+                 boxShadow: '0 0 20px var(--cyber-green-glow)',
+               }}>
+            {/* 扫描线动画 */}
+            <div className="scan-line" />
+            
+            <p className="text-sm text-center font-mono relative z-10">
+              <span className="font-bold" style={{ color: 'var(--cyber-green)' }}>
+                ELIMINATED: {checkedItems.size}/{checklist.length}
+              </span>
+              <br />
+              <span className="text-xs text-muted-foreground mt-1 block">
+                剩余位置的概率正在重新计算...
               </span>
             </p>
           </div>
         )}
 
         {checkedItems.size === checklist.length && (
-          <div className="mt-4 p-4 rounded-xl bg-chart-2/10 border border-chart-2/20">
-            <p className="text-sm text-center text-chart-2 font-medium">
-              🎉 所有位置已排查！如仍未找到，建议查看升级方案。
+          <div className="mt-6 p-5 rounded-xl relative overflow-hidden animate-pulse-wave"
+               style={{
+                 background: 'linear-gradient(135deg, rgba(0, 255, 157, 0.15) 0%, rgba(45, 225, 252, 0.15) 100%)',
+                 border: '2px solid var(--cyber-green)',
+                 boxShadow: '0 0 30px var(--cyber-green-glow)',
+               }}>
+            <p className="text-sm text-center font-bold" style={{ color: 'var(--cyber-green)' }}>
+              ✅ MISSION COMPLETE
+            </p>
+            <p className="text-xs text-muted-foreground text-center mt-2">
+              所有位置已排查！如仍未找到，建议查看升级方案。
             </p>
           </div>
         )}

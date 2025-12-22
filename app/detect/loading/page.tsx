@@ -9,11 +9,11 @@ import { InteractiveFog } from "@/components/ui/interactive-fog"
 import { HolographicBrain } from "@/components/ui/holographic-brain"
 
 const analysisSteps = [
-  { text: "正在构建时空模型...", subtitle: "分析物品物理特性和环境参数", icon: "🌐" },
-  { text: "正在比对 15,000+ 个相似案例...", subtitle: "匹配历史成功找回数据", icon: "🔍" },
-  { text: "正在分析行为心理模式...", subtitle: "解读丢失时的心理盲区", icon: "🧠" },
-  { text: "发现 3 个高概率盲区...", subtitle: "锁定最可能位置", icon: "🎯" },
-  { text: "正在生成战术指导...", subtitle: "构建科学排查清单", icon: "🗺️" },
+  { text: "正在连接神经元网络...", subtitle: "启动量子推演引擎", icon: "🌐" },
+  { text: "正在检索 3D 空间数据库...", subtitle: "匹配 15,000+ 成功案例", icon: "🔍" },
+  { text: "正在解析行为心理矩阵...", subtitle: "计算记忆盲区概率", icon: "🧠" },
+  { text: "正在运行物理模拟算法...", subtitle: "追踪物品位移轨迹", icon: "🎯" },
+  { text: "正在生成战术指导路径...", subtitle: "构建优先级排查地图", icon: "🗺️" },
   { text: "分析完成！", subtitle: "准备展示结果", icon: "✅" },
 ]
 
@@ -160,7 +160,11 @@ export default function LoadingPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
-      <InteractiveFog color="129, 140, 248" />
+      {/* 星空背景 */}
+      <div className="absolute inset-0 z-0">
+        <InteractiveFog color="129, 140, 248" />
+      </div>
+      
       {/* Header */}
       <header className="border-b border-border/50 glass relative z-10">
         <div className="container mx-auto px-4 py-3 flex justify-center items-center">
@@ -173,93 +177,116 @@ export default function LoadingPage() {
         </div>
       </header>
 
-      {/* Main Content */}
+      {/* Main Content - 科幻级 */}
       <main className="flex-1 flex items-center justify-center p-4 relative z-10">
-        <div className="max-w-lg w-full space-y-12">
-          {/* Holographic Brain Animation */}
+        <div className="max-w-2xl w-full space-y-10">
+          
+          {/* 反应堆圆环动画 */}
           <div className="flex justify-center">
-            <div className="relative w-full max-w-md aspect-square">
-              {/* 全息球动画 */}
+            <div className="relative w-64 h-64 md:w-80 md:h-80">
+              {/* 全息球粒子动画 */}
               <HolographicBrain 
                 keywords={[
                   session.itemCustomName || '物品',
                   session.lastSeenLocation || '位置',
                   session.mood || '状态',
-                  session.activity || '活动'
                 ]}
               />
               
-              {/* 中心图标 */}
+              {/* 中心反应堆发光核心 */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="w-20 h-20 rounded-full bg-primary/20 backdrop-blur-sm flex items-center justify-center animate-pulse border-2 border-primary/30">
-                  <span className="text-4xl">{analysisSteps[currentStep].icon}</span>
+                <div className="w-24 h-24 rounded-full flex items-center justify-center relative">
+                  {/* 外层脉冲光环 */}
+                  <div className="absolute inset-0 rounded-full animate-pulse-wave" style={{ 
+                    background: 'radial-gradient(circle, var(--holo-blue-glow) 0%, transparent 70%)',
+                  }} />
+                  
+                  {/* 发光内核 */}
+                  <div className="relative w-20 h-20 rounded-full flex items-center justify-center animate-pulse"
+                       style={{
+                         background: 'radial-gradient(circle, var(--holo-blue) 0%, var(--cyber-green) 100%)',
+                         boxShadow: '0 0 40px var(--holo-blue-glow), inset 0 0 30px rgba(255,255,255,0.3)',
+                       }}>
+                    <span className="text-4xl filter drop-shadow-lg">{analysisSteps[currentStep].icon}</span>
+                  </div>
                 </div>
               </div>
+
+              {/* 扫描线效果 */}
+              <div className="scan-line" />
             </div>
           </div>
 
-          {/* Analysis Steps with Enhanced Typography */}
-          <div className="space-y-6">
-            <div className="text-center space-y-3">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-2">
-                <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
-                <span className="text-sm font-medium text-primary">
-                  {isComplete ? "AI 分析完成" : "AI 正在分析"}
+          {/* 打字机效果文字区 */}
+          <div className="scifi-container p-8 space-y-6">
+            <div className="text-center space-y-4">
+              {/* 状态指示器 */}
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border-2"
+                   style={{
+                     backgroundColor: 'rgba(45, 225, 252, 0.1)',
+                     borderColor: 'var(--holo-blue)',
+                     boxShadow: '0 0 20px var(--holo-blue-glow)',
+                   }}>
+                <div className="w-2.5 h-2.5 rounded-full animate-pulse" style={{ backgroundColor: 'var(--cyber-green)' }} />
+                <span className="text-sm font-mono font-semibold" style={{ color: 'var(--holo-blue)' }}>
+                  {isComplete ? "ANALYSIS COMPLETE" : "ANALYZING..."}
                 </span>
               </div>
               
-              <h2 className="text-2xl md:text-3xl font-bold leading-tight">
+              {/* 主标题 - 放大+加粗 */}
+              <h2 className="text-2xl md:text-4xl font-bold leading-tight tracking-tight">
                 {analysisSteps[currentStep].text}
               </h2>
-              <p className="text-muted-foreground text-base">
+              
+              {/* 副标题 - 等宽字体科技感 */}
+              <p className="text-sm md:text-base font-mono" style={{ color: 'var(--cyber-green)' }}>
                 {analysisSteps[currentStep].subtitle}
               </p>
             </div>
 
-            {/* Steps List */}
-            <div className="bg-card rounded-2xl border border-border/50 p-5 card-shadow space-y-3">
+            {/* 步骤列表 - 简化版 */}
+            <div className="space-y-2">
               {analysisSteps.map((step, index) => (
                 <div
                   key={index}
-                  className={`flex items-center gap-3 transition-all duration-300 ${
-                    index <= currentStep ? "opacity-100" : "opacity-30"
+                  className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-300 ${
+                    index <= currentStep 
+                      ? "opacity-100 bg-white/5" 
+                      : "opacity-20"
                   }`}
                 >
-                  <div
-                    className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${
-                      index < currentStep
-                        ? "bg-primary"
-                        : index === currentStep
-                          ? "bg-primary animate-pulse"
-                          : "bg-secondary"
-                    }`}
-                  >
-                    {index < currentStep ? (
-                      <svg className="w-4 h-4 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    ) : (
-                      <span className="text-sm">{step.icon}</span>
-                    )}
+                  <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs ${
+                    index < currentStep
+                      ? "bg-[var(--cyber-green)] text-black"
+                      : index === currentStep
+                        ? "bg-[var(--holo-blue)] text-black animate-pulse"
+                        : "bg-white/10"
+                  }`}>
+                    {index < currentStep ? "✓" : index + 1}
                   </div>
-                  <span className={`text-sm transition-all duration-300 ${index === currentStep ? "text-foreground font-medium" : "text-muted-foreground"}`}>
-                    {step.text}
+                  <span className={`text-xs font-medium ${
+                    index === currentStep ? "text-white" : "text-muted-foreground"
+                  }`}>
+                    {step.text.replace(/\.\.\./g, '')}
                   </span>
                 </div>
               ))}
             </div>
 
-            {/* Progress Bar */}
+            {/* 进度条 - 发光样式 */}
             <div className="space-y-2">
-              <div className="flex justify-between text-sm text-muted-foreground">
-                <span>分析进度</span>
-                <span className="font-medium">{Math.round(progress)}%</span>
+              <div className="flex justify-between text-xs font-mono text-muted-foreground">
+                <span>PROGRESS</span>
+                <span className="font-bold" style={{ color: 'var(--cyber-green)' }}>{Math.round(progress)}%</span>
               </div>
-              <div className="h-2 bg-secondary rounded-full overflow-hidden">
+              <div className="slider-glow">
                 <div
-                  className="h-full bg-primary rounded-full transition-all duration-150 ease-out"
-                  style={{ width: `${progress}%` }}
-                ></div>
+                  className="slider-track h-2 rounded-full transition-all duration-150 ease-out"
+                  style={{ 
+                    width: `${progress}%`,
+                    background: 'linear-gradient(90deg, var(--holo-blue) 0%, var(--cyber-green) 100%)',
+                  }}
+                />
               </div>
             </div>
           </div>

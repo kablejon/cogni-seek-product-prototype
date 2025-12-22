@@ -61,7 +61,10 @@ export default function ResultPage() {
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
-      <InteractiveFog color="6, 182, 212" />
+      {/* 星空背景 */}
+      <div className="absolute inset-0 z-0">
+        <InteractiveFog color="6, 182, 212" />
+      </div>
       
       {/* Header */}
       <header className="sticky top-0 z-50 glass border-b border-border/50">
@@ -76,8 +79,8 @@ export default function ResultPage() {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8 md:py-12 relative z-10">
-        <div className="max-w-4xl mx-auto space-y-10">
+      <main className="container mx-auto px-4 py-6 md:py-10 relative z-10">
+        <div className="max-w-4xl mx-auto space-y-8">
           {/* Success Header */}
           <div className={`text-center space-y-4 transition-all duration-700 ${showDetails ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0'}`}>
             <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-chart-2/20 animate-pulse-soft">

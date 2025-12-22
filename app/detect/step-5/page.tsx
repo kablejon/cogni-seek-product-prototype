@@ -3,11 +3,8 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { ArrowRight, ArrowLeft, Search, Plus, Phone, Users, X, Check } from "lucide-react"
-import Link from "next/link"
-import { Header } from "@/components/shared"
+import { ChevronRight, ChevronLeft, Search, Plus, Phone, Users, X, Check, CheckCircle2 } from "lucide-react"
+import { Header } from "@/components/shared/header"
 import { useSearchStore } from "@/lib/store"
 import { searchDurationOptions, locationCategories } from "@/lib/data"
 import { InteractiveFog } from "@/components/ui/interactive-fog"
@@ -63,80 +60,86 @@ export default function Step5Page() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
-      <InteractiveFog color="34, 211, 238" />
+      {/* 星空背景 */}
+      <div className="absolute inset-0 z-0">
+        <InteractiveFog color="34, 211, 238" />
+      </div>
+      
       <Header currentStep={5} showProgress />
 
-      <main className="flex-1 container mx-auto px-4 py-8 md:py-12 relative z-10">
-        <div className="max-w-3xl mx-auto space-y-8">
-          {/* Page Title */}
-          <div className="text-center space-y-3">
-            <h1 className="text-3xl md:text-4xl font-bold">已排查信息</h1>
-            <p className="text-muted-foreground text-lg">告诉我们你已经找过哪些地方，避免重复搜索</p>
+      {/* 主容器 - 毛玻璃悬浮卡片 */}
+      <main className="flex-1 container mx-auto px-4 py-6 md:py-10 relative z-10 flex items-center justify-center">
+        <div className="w-full max-w-4xl scifi-container p-6 md:p-10 space-y-8">
+          
+          {/* 标题区 */}
+          <div className="text-center space-y-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--holo-blue)]/10 border border-[var(--holo-blue)]/30 mb-2">
+              <CheckCircle2 className="w-3 h-3" style={{ color: 'var(--holo-blue)' }} />
+              <span className="text-xs font-medium" style={{ color: 'var(--holo-blue)' }}>Step 5 of 5</span>
+            </div>
+            <h1 className="text-2xl md:text-3xl font-bold">已排查信息</h1>
+            <p className="text-sm text-muted-foreground">告诉我们你已经找过哪些地方，避免重复建议</p>
           </div>
 
-          {/* Has Searched */}
-          <div className="bg-card rounded-2xl border border-border/50 p-6 card-shadow">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <Search className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <Label className="text-base">你已经找过了吗？</Label>
-                  <p className="text-sm text-muted-foreground">了解你的搜索历史有助于优化建议</p>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                {[
-                  { value: false, label: '刚发现丢了' },
-                  { value: true, label: '已经找过' },
-                ].map((option) => (
-                  <button
-                    key={String(option.value)}
-                    onClick={() => setHasSearched(option.value)}
-                    className={`px-4 py-2 rounded-xl text-sm transition-smooth border ${
-                      hasSearched === option.value
-                        ? 'bg-primary text-primary-foreground border-primary'
-                        : 'bg-background border-border/50 hover:border-border'
-                    }`}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
+          {/* 是否已搜索 */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Search className="w-4 h-4" style={{ color: 'var(--holo-blue)' }} />
+              <h2 className="font-bold text-base">你已经找过了吗？</h2>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { value: false, label: '刚发现丢了', icon: '🔍' },
+                { value: true, label: '已经找过', icon: '✅' },
+              ].map((option) => (
+                <button
+                  key={String(option.value)}
+                  onClick={() => setHasSearched(option.value)}
+                  className={`card-option ${hasSearched === option.value ? 'card-option-selected' : ''} relative`}
+                >
+                  {hasSearched === option.value && (
+                    <div className="check-glow">
+                      <Check className="w-3 h-3 text-black" />
+                    </div>
+                  )}
+                  
+                  <div className="text-center py-2">
+                    <div className="text-2xl mb-1">{option.icon}</div>
+                    <div className="text-sm font-medium">{option.label}</div>
+                  </div>
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Search Details */}
+          {/* 搜索详情 */}
           {hasSearched && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
-              {/* Duration */}
-              <div className="bg-card rounded-2xl border border-border/50 p-6 card-shadow space-y-4">
-                <Label className="text-base">找了多久了？</Label>
+            <div className="space-y-6 animate-fade-in-up">
+              {/* 搜索时长 */}
+              <div className="space-y-4">
+                <h2 className="font-bold text-base text-muted-foreground">找了多久了？</h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {searchDurationOptions.map((option) => (
                     <button
                       key={option.id}
                       onClick={() => setSearchDuration(option.id)}
-                      className={`p-3 rounded-xl text-sm text-center transition-smooth border ${
-                        searchDuration === option.id
-                          ? 'bg-primary text-primary-foreground border-primary font-medium'
-                          : 'bg-background border-border/50 hover:border-border'
-                      }`}
+                      className={`chip ${searchDuration === option.id ? 'chip-selected' : ''}`}
                     >
+                      {searchDuration === option.id && <Check className="w-3 h-3" />}
                       {option.label}
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* Searched Locations */}
-              <div className="bg-card rounded-2xl border border-border/50 p-6 card-shadow space-y-4">
-                <Label className="text-base">已经找过哪些地方？（可多选）</Label>
+              {/* 已搜索位置 */}
+              <div className="space-y-4">
+                <h2 className="font-bold text-base text-muted-foreground">已经找过哪些地方？（可多选）</h2>
                 
                 {relevantLocations.length > 0 && (
-                  <div className="space-y-2">
-                    <p className="text-sm text-muted-foreground">
+                  <div className="space-y-3">
+                    <p className="text-xs text-muted-foreground">
                       基于你选择的「{locationCategories.find(c => c.id === session.locationCategory)?.label}」：
                     </p>
                     <div className="flex flex-wrap gap-2">
@@ -144,13 +147,9 @@ export default function Step5Page() {
                         <button
                           key={location.id}
                           onClick={() => handleToggleLocation(location.id)}
-                          className={`px-3 py-2 rounded-xl text-sm transition-smooth border flex items-center gap-2 ${
-                            searchedLocations.includes(location.id)
-                              ? 'bg-primary text-primary-foreground border-primary'
-                              : 'bg-background border-border/50 hover:border-border'
-                          }`}
+                          className={`chip ${searchedLocations.includes(location.id) ? 'chip-selected' : ''}`}
                         >
-                          {searchedLocations.includes(location.id) && <Check className="h-3 w-3" />}
+                          {searchedLocations.includes(location.id) && <Check className="w-3 h-3" />}
                           {location.label}
                         </button>
                       ))}
@@ -158,20 +157,26 @@ export default function Step5Page() {
                   </div>
                 )}
 
-                <div className="space-y-3 pt-4 border-t border-border/50">
-                  <p className="text-sm text-muted-foreground">还找过其他地方？</p>
+                {/* 自定义位置 */}
+                <div className="space-y-3 pt-4 border-t border-white/10">
+                  <p className="text-xs text-muted-foreground">还找过其他地方？</p>
                   
                   {customSearchedLocations.length > 0 && (
                     <div className="flex flex-wrap gap-2">
                       {customSearchedLocations.map((location, index) => (
                         <div
                           key={index}
-                          className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm"
+                          className="flex items-center gap-2 px-3 py-1.5 rounded-full border"
+                          style={{
+                            backgroundColor: 'rgba(0, 255, 157, 0.1)',
+                            borderColor: 'var(--cyber-green)',
+                            color: 'var(--cyber-green)',
+                          }}
                         >
-                          <span>{location}</span>
+                          <span className="text-xs font-medium">{location}</span>
                           <button
                             onClick={() => handleRemoveCustomLocation(location)}
-                            className="hover:text-destructive transition-smooth"
+                            className="hover:text-destructive transition-colors"
                           >
                             <X className="h-3 w-3" />
                           </button>
@@ -181,43 +186,40 @@ export default function Step5Page() {
                   )}
 
                   <div className="flex gap-2">
-                    <Input
+                    <input
                       placeholder="输入其他找过的地方..."
                       value={newCustomLocation}
                       onChange={(e) => setNewCustomLocation(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && handleAddCustomLocation()}
-                      className="flex-1 rounded-xl"
+                      className="flex-1 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm focus:border-[var(--holo-blue)] focus:ring-2 focus:ring-[var(--holo-blue)]/20 transition-all"
                     />
-                    <Button
-                      variant="outline"
+                    <button
                       onClick={handleAddCustomLocation}
                       disabled={!newCustomLocation.trim()}
-                      className="rounded-xl"
+                      className="btn-scifi-secondary px-4 disabled:opacity-40"
+                      style={{ width: 'auto', maxWidth: 'fit-content' }}
                     >
                       <Plus className="h-4 w-4" />
-                    </Button>
+                    </button>
                   </div>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Additional Actions */}
-          <div className="bg-card rounded-2xl border border-border/50 p-6 card-shadow space-y-6">
-            <div className="flex items-center gap-2 pb-4 border-b border-border/50">
-              <span className="text-xl">📋</span>
-              <span className="font-semibold">其他尝试</span>
-            </div>
+          {/* 其他尝试 */}
+          <div className="space-y-6">
+            <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+            
+            <h2 className="font-bold text-base text-muted-foreground">其他尝试</h2>
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Users className="h-5 w-5 text-muted-foreground" />
-                <div>
-                  <Label className="text-base">是否问过同住的人/同事？</Label>
-                  <p className="text-sm text-muted-foreground">他们可能看到或移动过物品</p>
-                </div>
+            {/* 是否问过他人 */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Users className="h-4 w-4 text-muted-foreground" />
+                <p className="text-sm">是否问过同住的人/同事？</p>
               </div>
-              <div className="flex gap-2">
+              <div className="grid grid-cols-2 gap-3">
                 {[
                   { value: false, label: '没有' },
                   { value: true, label: '问过了' },
@@ -225,28 +227,23 @@ export default function Step5Page() {
                   <button
                     key={String(option.value)}
                     onClick={() => setAskedOthers(option.value)}
-                    className={`px-4 py-2 rounded-xl text-sm transition-smooth border ${
-                      askedOthers === option.value
-                        ? 'bg-primary text-primary-foreground border-primary'
-                        : 'bg-background border-border/50 hover:border-border'
-                    }`}
+                    className={`chip ${askedOthers === option.value ? 'chip-selected' : ''}`}
                   >
+                    {askedOthers === option.value && <Check className="w-3 h-3" />}
                     {option.label}
                   </button>
                 ))}
               </div>
             </div>
 
+            {/* 查找功能 */}
             {supportsFindMy && (
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Phone className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <Label className="text-base">是否尝试过"查找"功能？</Label>
-                    <p className="text-sm text-muted-foreground">如响铃、定位等功能</p>
-                  </div>
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Phone className="h-4 w-4 text-muted-foreground" />
+                  <p className="text-sm">是否尝试过"查找"功能？</p>
                 </div>
-                <div className="flex gap-2">
+                <div className="grid grid-cols-2 gap-3">
                   {[
                     { value: false, label: '没有' },
                     { value: true, label: '试过了' },
@@ -254,12 +251,9 @@ export default function Step5Page() {
                     <button
                       key={String(option.value)}
                       onClick={() => setTriedFindMy(option.value)}
-                      className={`px-4 py-2 rounded-xl text-sm transition-smooth border ${
-                        triedFindMy === option.value
-                          ? 'bg-primary text-primary-foreground border-primary'
-                          : 'bg-background border-border/50 hover:border-border'
-                      }`}
+                      className={`chip ${triedFindMy === option.value ? 'chip-selected' : ''}`}
                     >
+                      {triedFindMy === option.value && <Check className="w-3 h-3" />}
                       {option.label}
                     </button>
                   ))}
@@ -268,25 +262,40 @@ export default function Step5Page() {
             )}
           </div>
 
-          {/* Tip Box */}
-          <div className="bg-chart-2/10 border border-chart-2/20 rounded-xl p-4">
-            <p className="text-sm text-muted-foreground">
-              <span className="text-chart-2 font-medium">💡 提示：</span>
+          {/* 提示框 */}
+          <div className="p-4 rounded-xl border-2"
+               style={{
+                 backgroundColor: 'rgba(45, 225, 252, 0.08)',
+                 borderColor: 'var(--holo-blue)',
+               }}>
+            <p className="text-xs text-muted-foreground">
+              <span className="font-medium" style={{ color: 'var(--holo-blue)' }}>💡 AI 提示：</span>
+              <br />
               了解你已经排查过的区域，可以帮助我们避免重复建议，并聚焦于那些容易被忽视的"视觉和记忆盲区"。
             </p>
           </div>
 
-          {/* Navigation */}
-          <div className="flex justify-between items-center pt-4">
-            <Button asChild variant="ghost" className="rounded-xl">
-              <Link href="/detect/step-4">
-                <ArrowLeft className="mr-2 h-5 w-5" /> 上一步
-              </Link>
-            </Button>
-            <Button onClick={handleNext} size="lg" className="px-8 rounded-xl card-shadow">
-              开始分析 <ArrowRight className="ml-2 h-5 w-5" />
+          {/* 底部按钮 */}
+          <div className="flex flex-col items-center gap-4 pt-6">
+            <button
+              onClick={handleNext}
+              className="btn-scifi-primary"
+            >
+              开始 AI 分析
+              <ChevronRight className="w-5 h-5" />
+            </button>
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.back()}
+              className="text-xs text-muted-foreground hover:text-white"
+            >
+              <ChevronLeft className="w-4 h-4 mr-1" />
+              上一步
             </Button>
           </div>
+
         </div>
       </main>
     </div>

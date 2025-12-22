@@ -65,6 +65,15 @@
   /* 成功色 */
   --success: oklch(0.7 0.18 145);
   --success-foreground: oklch(0.08 0.01 250);
+  
+  /* ==================== 科幻强调色 ==================== */
+  /* 赛博绿 - Cyber Green */
+  --cyber-green: #00FF9D;
+  --cyber-green-glow: rgba(0, 255, 157, 0.5);
+  
+  /* 全息蓝 - Holo Blue */
+  --holo-blue: #2DE1FC;
+  --holo-blue-glow: rgba(45, 225, 252, 0.5);
 }
 
 @theme inline {
@@ -180,6 +189,17 @@
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
 }
 
+/* ==================== 科幻级毛玻璃悬浮卡片 ==================== */
+.scifi-container {
+  background: rgba(20, 20, 30, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4), 
+              0 0 80px rgba(45, 225, 252, 0.1);
+}
+
 /* 玻璃拟态效果 */
 .glass {
   background: rgba(10, 10, 15, 0.8);
@@ -198,6 +218,210 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+/* ==================== 科幻级按钮 - 全胶囊型 ==================== */
+
+/* 主按钮 - 发光胶囊 */
+.btn-scifi-primary {
+  @apply inline-flex items-center justify-center gap-2 px-8 py-4 text-sm font-semibold;
+  background: linear-gradient(135deg, var(--holo-blue) 0%, var(--cyber-green) 100%);
+  color: #000;
+  border-radius: 9999px;
+  border: none;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 0 20px var(--holo-blue-glow),
+              inset 0 2px 4px rgba(255, 255, 255, 0.3);
+  position: relative;
+  overflow: hidden;
+  width: 80%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.btn-scifi-primary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, transparent 50%);
+  border-radius: 9999px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.btn-scifi-primary:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 0 30px var(--holo-blue-glow),
+              0 5px 20px rgba(45, 225, 252, 0.3),
+              inset 0 2px 4px rgba(255, 255, 255, 0.5);
+}
+
+.btn-scifi-primary:hover::before {
+  opacity: 1;
+}
+
+.btn-scifi-primary:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* 次要按钮 - 透明发光边框 */
+.btn-scifi-secondary {
+  @apply inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-medium;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--holo-blue);
+  border: 2px solid rgba(45, 225, 252, 0.3);
+  border-radius: 9999px;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 0 10px rgba(45, 225, 252, 0.1);
+}
+
+.btn-scifi-secondary:hover {
+  background: rgba(45, 225, 252, 0.1);
+  border-color: var(--holo-blue);
+  transform: translateY(-2px);
+  box-shadow: 0 0 20px var(--holo-blue-glow);
+}
+
+/* ==================== 科幻级选项卡片 ==================== */
+
+/* 未选中状态 */
+.card-option {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 1rem;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  cursor: pointer;
+  position: relative;
+}
+
+.card-option:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(45, 225, 252, 0.3);
+  transform: translateY(-2px);
+}
+
+/* 选中状态 - 发光效果 */
+.card-option-selected {
+  background: rgba(45, 225, 252, 0.15);
+  border: 2px solid var(--holo-blue);
+  box-shadow: 0 0 20px var(--holo-blue-glow),
+              inset 0 0 20px rgba(45, 225, 252, 0.1);
+  transform: translateY(-2px);
+}
+
+/* 选中标记 - 发光对勾 */
+.check-glow {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  background: var(--holo-blue);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 15px var(--holo-blue-glow);
+  animation: check-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes check-pop {
+  0% { transform: scale(0); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+/* ==================== 标签云 Chips ==================== */
+
+.chip {
+  @apply inline-flex items-center gap-2 px-4 py-2 text-sm font-medium;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 9999px;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  cursor: pointer;
+}
+
+.chip:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(45, 225, 252, 0.4);
+  transform: scale(1.05);
+}
+
+.chip-selected {
+  background: rgba(0, 255, 157, 0.2);
+  border: 2px solid var(--cyber-green);
+  color: var(--cyber-green);
+  box-shadow: 0 0 15px var(--cyber-green-glow);
+  transform: scale(1.05);
+}
+
+/* ==================== 色块选择器 ==================== */
+
+.color-dot {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  cursor: pointer;
+  position: relative;
+}
+
+.color-dot:hover {
+  transform: scale(1.1);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.color-dot-selected {
+  border: 3px solid #fff;
+  box-shadow: 0 0 0 3px var(--holo-blue),
+              0 0 20px var(--holo-blue-glow);
+  transform: scale(1.15);
+}
+
+/* ==================== 发光滑块 ==================== */
+
+.slider-glow {
+  position: relative;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: visible;
+}
+
+.slider-track {
+  position: absolute;
+  height: 100%;
+  background: linear-gradient(90deg, var(--holo-blue) 0%, var(--cyber-green) 100%);
+  border-radius: 3px;
+  box-shadow: 0 0 10px var(--holo-blue-glow);
+  transition: width 0.3s;
+}
+
+.slider-thumb {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: #fff;
+  border-radius: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 20px var(--holo-blue-glow),
+              0 2px 8px rgba(0, 0, 0, 0.3);
+  cursor: grab;
+  transition: all 0.2s;
+}
+
+.slider-thumb:hover {
+  transform: translate(-50%, -50%) scale(1.2);
+  box-shadow: 0 0 30px var(--holo-blue-glow);
+}
+
+.slider-thumb:active {
+  cursor: grabbing;
+  transform: translate(-50%, -50%) scale(0.95);
 }
 
 /* ==================== xAI Glow Effects ==================== */
@@ -304,6 +528,109 @@
     opacity: 1;
     filter: blur(0);
   }
+}
+
+/* ==================== 科幻级动画 ==================== */
+
+/* 脉冲波纹 - 用于状态标签 */
+@keyframes pulse-wave {
+  0% {
+    box-shadow: 0 0 0 0 var(--holo-blue-glow);
+  }
+  50% {
+    box-shadow: 0 0 0 10px transparent;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+.animate-pulse-wave {
+  animation: pulse-wave 2s ease-out infinite;
+}
+
+/* 打字机效果文字 */
+@keyframes typewriter {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+@keyframes blink-cursor {
+  50% { border-color: transparent; }
+}
+
+.typewriter {
+  overflow: hidden;
+  border-right: 2px solid var(--holo-blue);
+  white-space: nowrap;
+  animation: typewriter 1.5s steps(40) 1s forwards,
+             blink-cursor 0.75s step-end infinite;
+}
+
+/* 数据流动画 - 用于加载页面 */
+@keyframes data-flow {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100px) scale(0.8);
+    opacity: 0;
+  }
+}
+
+.animate-data-flow {
+  animation: data-flow 2s ease-in-out infinite;
+}
+
+/* 扫描线 - 用于全息效果 */
+@keyframes scan-line {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+.scan-line {
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    var(--holo-blue) 50%, 
+    transparent 100%);
+  opacity: 0.5;
+  animation: scan-line 3s linear infinite;
+}
+
+/* 悬浮卡片上浮 */
+@keyframes card-float {
+  0%, 100% { 
+    transform: translateY(0) rotateX(0deg);
+  }
+  50% { 
+    transform: translateY(-8px) rotateX(2deg);
+  }
+}
+
+.animate-card-float {
+  animation: card-float 4s ease-in-out infinite;
+}
+
+/* 全息闪烁 */
+@keyframes holo-flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+  75% { opacity: 0.95; }
+}
+
+.animate-holo-flicker {
+  animation: holo-flicker 0.15s ease-in-out infinite;
 }
 
 .animate-marquee {

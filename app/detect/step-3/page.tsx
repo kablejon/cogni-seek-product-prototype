@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button"
 import { ChevronRight, ChevronLeft, MapPin, Check } from "lucide-react"
 import { Header } from "@/components/shared/header"
 import { useSearchStore } from "@/lib/store"
-import { locationCategories } from "@/lib/data"
 import { InteractiveFog } from "@/components/ui/interactive-fog"
 
 // 主场景卡片配置
@@ -16,7 +15,6 @@ const SCENE_CARDS = [
     icon: '🏠', 
     label: '家里', 
     desc: '住所、房间',
-    gradient: 'from-blue-500/20 to-cyan-500/20',
     subAreas: ['客厅', '卧室', '厨房', '卫生间', '玄关/门口', '阳台', '书房', '其他房间']
   },
   { 
@@ -24,7 +22,6 @@ const SCENE_CARDS = [
     icon: '🏢', 
     label: '公司/学校', 
     desc: '工作/学习场所',
-    gradient: 'from-purple-500/20 to-pink-500/20',
     subAreas: ['办公桌', '会议室', '茶水间', '洗手间', '食堂', '休息区', '停车场', '教室']
   },
   { 
@@ -32,7 +29,6 @@ const SCENE_CARDS = [
     icon: '🚗', 
     label: '车/通勤路上', 
     desc: '交通工具',
-    gradient: 'from-orange-500/20 to-red-500/20',
     subAreas: ['车内座位', '后备箱', '车门侧袋', '地铁/公交', '出租车', '路边', '加油站', '停车场']
   },
   { 
@@ -40,7 +36,6 @@ const SCENE_CARDS = [
     icon: '🌳', 
     label: '户外/公共场所', 
     desc: '商场、餐厅等',
-    gradient: 'from-green-500/20 to-teal-500/20',
     subAreas: ['商场/超市', '餐厅', '咖啡厅', '健身房', '公园', '医院', '银行', '其他场所']
   },
 ]
@@ -59,7 +54,6 @@ export default function Step3Page() {
 
   const handleSceneSelect = (sceneId: string) => {
     setSelectedScene(sceneId)
-    // 清空之前选择的子区域
     if (sceneId !== selectedScene) {
       setSelectedSubAreas([])
     }
@@ -86,7 +80,7 @@ export default function Step3Page() {
 
     updateSession({
       locationCategory: selectedScene,
-      specificLocation: selectedSubAreas[0], // 主要位置
+      specificLocation: selectedSubAreas[0],
       locationCustom: customLocation,
       visitedMultipleLocations: selectedSubAreas.length > 1,
       otherVisitedLocations: selectedSubAreas,
@@ -103,72 +97,69 @@ export default function Step3Page() {
       
       <Header currentStep={3} showProgress />
 
-      <main className="flex-1 container mx-auto px-4 py-8 md:py-12 relative z-10">
-        <div className="max-w-5xl mx-auto space-y-8">
-          {/* Page Title */}
-          <div className="text-center space-y-3">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-2">
-              <MapPin className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium text-primary">Step 3 of 5</span>
+      <main className="flex-1 container mx-auto px-4 py-6 md:py-10 relative z-10 flex items-center justify-center">
+        <div className="w-full max-w-5xl scifi-container p-6 md:p-10 space-y-8">
+          
+          {/* 标题区 */}
+          <div className="text-center space-y-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--holo-blue)]/10 border border-[var(--holo-blue)]/30 mb-2">
+              <MapPin className="w-3 h-3" style={{ color: 'var(--holo-blue)' }} />
+              <span className="text-xs font-medium" style={{ color: 'var(--holo-blue)' }}>Step 3 of 5</span>
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold">最后目击</h1>
-            <p className="text-muted-foreground text-lg">
-              你<span className="text-primary font-semibold">最后一次看见它</span>是在哪里？
+            <h1 className="text-2xl md:text-3xl font-bold">最后目击</h1>
+            <p className="text-sm text-muted-foreground">
+              你<span className="text-[var(--cyber-green)] font-semibold">最后一次看见它</span>是在哪里？
             </p>
           </div>
 
           {/* 场景大卡片 - 4选1 */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {SCENE_CARDS.map((scene) => (
-              <button
-                key={scene.id}
-                onClick={() => handleSceneSelect(scene.id)}
-                className={`relative p-6 rounded-2xl border-2 transition-all duration-300 ${
-                  selectedScene === scene.id
-                    ? 'border-primary shadow-lg scale-105 bg-primary/10'
-                    : 'border-border/50 bg-card/50 hover:border-primary/30 hover:bg-card hover:scale-102'
-                }`}
-              >
-                {/* 选中标记 */}
-                {selectedScene === scene.id && (
-                  <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-primary flex items-center justify-center">
-                    <Check className="h-4 w-4 text-white" />
-                  </div>
-                )}
+          <div className="space-y-4">
+            <h2 className="text-sm font-semibold text-muted-foreground">选择场景</h2>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              {SCENE_CARDS.map((scene) => {
+                const isSelected = selectedScene === scene.id
+                
+                return (
+                  <button
+                    key={scene.id}
+                    onClick={() => handleSceneSelect(scene.id)}
+                    className={`card-option ${isSelected ? 'card-option-selected' : ''} relative animate-card-float`}
+                    style={{ animationDelay: `${SCENE_CARDS.indexOf(scene) * 0.1}s` }}
+                  >
+                    {isSelected && (
+                      <div className="check-glow">
+                        <Check className="w-3 h-3 text-black" />
+                      </div>
+                    )}
 
-                <div className="flex flex-col items-center gap-3 text-center">
-                  <div className={`text-5xl transition-transform duration-300 ${
-                    selectedScene === scene.id ? 'scale-110' : ''
-                  }`}>
-                    {scene.icon}
-                  </div>
-                  <div>
-                    <div className="font-bold text-base">{scene.label}</div>
-                    <div className="text-xs text-muted-foreground mt-1">{scene.desc}</div>
-                  </div>
-                </div>
-
-                {/* 渐变装饰 */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${scene.gradient} rounded-2xl opacity-0 transition-opacity duration-300 ${
-                  selectedScene === scene.id ? 'opacity-100' : ''
-                }`} style={{ zIndex: -1 }} />
-              </button>
-            ))}
+                    <div className="flex flex-col items-center gap-2 py-3">
+                      <div className={`text-4xl transition-transform duration-300 ${isSelected ? 'scale-110' : ''}`}>
+                        {scene.icon}
+                      </div>
+                      <div>
+                        <div className="font-semibold text-sm">{scene.label}</div>
+                        <div className="text-xs text-muted-foreground mt-0.5">{scene.desc}</div>
+                      </div>
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
           </div>
 
           {/* 路径补全 - 标签云多选 */}
           {selectedScene && currentScene && (
-            <div className="space-y-4 animate-in slide-in-from-bottom-4 duration-500">
-              <div className="h-px bg-border/50" />
+            <div className="space-y-4 animate-fade-in-up">
+              <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
-              <div className="bg-gradient-to-r from-primary/10 to-purple-500/10 border-2 border-primary/20 rounded-3xl p-6 md:p-8 space-y-4">
+              <div className="bg-gradient-to-r from-[var(--holo-blue)]/10 to-[var(--cyber-green)]/10 border-2 border-[var(--holo-blue)]/20 rounded-3xl p-6 space-y-4">
                 <div className="flex items-start gap-3">
-                  <div className="text-3xl">{currentScene.icon}</div>
+                  <div className="text-3xl flex-shrink-0">{currentScene.icon}</div>
                   <div className="flex-1">
-                    <h3 className="text-xl font-bold mb-1">
-                      你在 <span className="text-primary">{currentScene.label}</span> 的具体区域？
+                    <h3 className="text-lg font-bold mb-1">
+                      你在 <span style={{ color: 'var(--cyber-green)' }}>{currentScene.label}</span> 的具体区域？
                     </h3>
-                    <p className="text-sm text-muted-foreground mb-4">
+                    <p className="text-xs text-muted-foreground mb-4">
                       💡 多选可以帮助 AI 穷举你可能去过但忘记的地方
                     </p>
 
@@ -180,13 +171,9 @@ export default function Step3Page() {
                           <button
                             key={area}
                             onClick={() => handleSubAreaToggle(area)}
-                            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                              isSelected
-                                ? 'bg-primary text-white shadow-md scale-105'
-                                : 'bg-background/80 hover:bg-background border border-border/50 hover:border-primary/30 hover:scale-105'
-                            }`}
+                            className={`chip ${isSelected ? 'chip-selected' : ''}`}
                           >
-                            {isSelected && <Check className="inline-block h-3 w-3 mr-1" />}
+                            {isSelected && <Check className="w-3 h-3" />}
                             {area}
                           </button>
                         )
@@ -195,9 +182,9 @@ export default function Step3Page() {
 
                     {/* 已选择计数 */}
                     {selectedSubAreas.length > 0 && (
-                      <div className="mt-4 p-3 rounded-xl bg-primary/10 border border-primary/20">
+                      <div className="mt-4 p-3 rounded-xl bg-[var(--cyber-green)]/10 border border-[var(--cyber-green)]/20">
                         <p className="text-sm text-center">
-                          <span className="font-bold text-primary">已选择 {selectedSubAreas.length} 个区域</span>
+                          <span className="font-bold" style={{ color: 'var(--cyber-green)' }}>已选择 {selectedSubAreas.length} 个区域</span>
                           <span className="text-muted-foreground ml-2">
                             {selectedSubAreas.slice(0, 3).join('、')}
                             {selectedSubAreas.length > 3 && '...'}
@@ -209,9 +196,9 @@ export default function Step3Page() {
                 </div>
               </div>
 
-              {/* 自定义补充（选填） */}
+              {/* 自定义补充 */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-muted-foreground">
+                <label className="text-xs font-medium text-muted-foreground">
                   还有其他特殊位置？（选填）
                 </label>
                 <input
@@ -219,46 +206,34 @@ export default function Step3Page() {
                   value={customLocation}
                   onChange={(e) => setCustomLocation(e.target.value)}
                   placeholder="例如：朋友家、酒店大堂、展览馆..."
-                  className="w-full px-4 py-3 rounded-xl border border-border/50 bg-background/50 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                  className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm focus:border-[var(--holo-blue)] focus:ring-2 focus:ring-[var(--holo-blue)]/20 transition-all"
                 />
               </div>
             </div>
           )}
 
-          {/* Navigation */}
-          <div className="flex items-center justify-between pt-4">
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={() => router.back()}
-              className="rounded-full"
-            >
-              <ChevronLeft className="mr-2 h-5 w-5" />
-              上一步
-            </Button>
-
-            <Button
-              size="lg"
+          {/* 底部按钮 */}
+          <div className="flex flex-col items-center gap-4 pt-6">
+            <button
               onClick={handleNext}
-              className="rounded-full px-8"
               disabled={!selectedScene || selectedSubAreas.length === 0}
+              className="btn-scifi-primary disabled:opacity-40 disabled:cursor-not-allowed"
             >
               继续下一步
-              <ChevronRight className="ml-2 h-5 w-5" />
+              <ChevronRight className="w-5 h-5" />
+            </button>
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.back()}
+              className="text-xs text-muted-foreground hover:text-white"
+            >
+              <ChevronLeft className="w-4 h-4 mr-1" />
+              上一步
             </Button>
           </div>
 
-          {/* 当前选择提示 */}
-          {selectedScene && selectedSubAreas.length > 0 && (
-            <div className="text-center p-4 rounded-xl bg-secondary/30 border border-border/50 animate-in fade-in duration-500">
-              <p className="text-sm text-muted-foreground">
-                当前选择：
-                <span className="font-semibold text-foreground ml-2">
-                  {currentScene?.label} - {selectedSubAreas.join('、')}
-                </span>
-              </p>
-            </div>
-          )}
         </div>
       </main>
     </div>
