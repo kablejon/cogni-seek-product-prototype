@@ -59,17 +59,17 @@ export default function Step5Page() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
-      {/* 星空背景 */}
-      <div className="absolute inset-0 z-0">
+    <div className="min-h-screen bg-background flex flex-col relative">
+      {/* 星空背景 - 固定定位 */}
+      <div className="fixed inset-0 z-0">
         <InteractiveFog color="34, 211, 238" />
       </div>
       
       <Header currentStep={5} showProgress />
 
       {/* 主容器 - 毛玻璃悬浮卡片 */}
-      <main className="flex-1 container mx-auto px-4 py-6 md:py-10 relative z-10 flex items-center justify-center">
-        <div className="w-full max-w-4xl scifi-container p-6 md:p-10 space-y-8">
+      <main className="container mx-auto px-4 py-8 md:py-12 relative z-10">
+        <div className="w-full max-w-4xl mx-auto scifi-container p-6 md:p-10 space-y-8">
           
           {/* 标题区 */}
           <div className="text-center space-y-2">

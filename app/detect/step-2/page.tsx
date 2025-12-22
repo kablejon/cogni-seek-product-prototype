@@ -55,10 +55,10 @@ export default function Step2Page() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
-      {/* 星空背景 - 动态亮度 */}
+    <div className="min-h-screen bg-background flex flex-col relative">
+      {/* 星空背景 - 动态亮度 - 固定定位 */}
       <div 
-        className="absolute inset-0 z-0 transition-opacity duration-500" 
+        className="fixed inset-0 z-0 transition-opacity duration-500" 
         style={{ opacity: getBackgroundOpacity(timeSliderValue) }}
       >
         <InteractiveFog color="29, 78, 216" />
@@ -67,8 +67,8 @@ export default function Step2Page() {
       <Header currentStep={2} showProgress />
 
       {/* 主容器 */}
-      <main className="flex-1 container mx-auto px-4 py-6 md:py-10 relative z-10 flex items-center justify-center">
-        <div className="w-full max-w-3xl scifi-container p-6 md:p-10 space-y-10">
+      <main className="container mx-auto px-4 py-8 md:py-12 relative z-10">
+        <div className="w-full max-w-3xl mx-auto scifi-container p-6 md:p-10 space-y-10">
           
           {/* 标题区 */}
           <div className="text-center space-y-2">
