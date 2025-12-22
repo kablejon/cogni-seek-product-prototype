@@ -6,15 +6,15 @@ import Link from "next/link"
 import { useSearchStore } from "@/lib/store"
 import { getDefaultAnalysisResult } from "@/lib/ai-service"
 import { InteractiveFog } from "@/components/ui/interactive-fog"
+import { HolographicBrain } from "@/components/ui/holographic-brain"
 
 const analysisSteps = [
-  { text: "正在构建时空坐标系统...", icon: "🌐" },
-  { text: "正在分析行为心理模式...", icon: "🧠" },
-  { text: "正在计算环境概率分布...", icon: "📊" },
-  { text: "正在匹配 15,000+ 相似案例...", icon: "🔍" },
-  { text: "正在进行深度分析...", icon: "🔬" },
-  { text: "正在生成寻物路径图...", icon: "🗺️" },
-  { text: "分析完成", icon: "✅" },
+  { text: "正在构建时空模型...", subtitle: "分析物品物理特性和环境参数", icon: "🌐" },
+  { text: "正在比对 15,000+ 个相似案例...", subtitle: "匹配历史成功找回数据", icon: "🔍" },
+  { text: "正在分析行为心理模式...", subtitle: "解读丢失时的心理盲区", icon: "🧠" },
+  { text: "发现 3 个高概率盲区...", subtitle: "锁定最可能位置", icon: "🎯" },
+  { text: "正在生成战术指导...", subtitle: "构建科学排查清单", icon: "🗺️" },
+  { text: "分析完成！", subtitle: "准备展示结果", icon: "✅" },
 ]
 
 export default function LoadingPage() {
@@ -176,38 +176,43 @@ export default function LoadingPage() {
       {/* Main Content */}
       <main className="flex-1 flex items-center justify-center p-4 relative z-10">
         <div className="max-w-lg w-full space-y-12">
-          {/* Animated Radar */}
+          {/* Holographic Brain Animation */}
           <div className="flex justify-center">
-            <div className="relative w-40 h-40">
-              <div className="absolute inset-0 rounded-full border-2 border-primary/10 animate-ping" style={{ animationDuration: '2s' }}></div>
-              <div className="absolute inset-4 rounded-full border-2 border-primary/20 animate-pulse"></div>
-              <div className="absolute inset-8 rounded-full border-2 border-primary/30"></div>
-
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center animate-pulse">
-                  <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-                    <span className="text-2xl">{analysisSteps[currentStep].icon}</span>
-                  </div>
+            <div className="relative w-full max-w-md aspect-square">
+              {/* 全息球动画 */}
+              <HolographicBrain 
+                keywords={[
+                  session.itemCustomName || '物品',
+                  session.lastSeenLocation || '位置',
+                  session.mood || '状态',
+                  session.activity || '活动'
+                ]}
+              />
+              
+              {/* 中心图标 */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="w-20 h-20 rounded-full bg-primary/20 backdrop-blur-sm flex items-center justify-center animate-pulse border-2 border-primary/30">
+                  <span className="text-4xl">{analysisSteps[currentStep].icon}</span>
                 </div>
-              </div>
-
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div 
-                  className="w-0.5 h-20 bg-gradient-to-t from-primary to-transparent origin-bottom animate-spin"
-                  style={{ animationDuration: '2s' }}
-                ></div>
               </div>
             </div>
           </div>
 
-          {/* Analysis Steps */}
+          {/* Analysis Steps with Enhanced Typography */}
           <div className="space-y-6">
-            <div className="text-center space-y-2">
-              <h2 className="text-2xl md:text-3xl font-bold">
-                {isComplete ? "分析完成！" : "正在智能分析..."}
+            <div className="text-center space-y-3">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-2">
+                <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+                <span className="text-sm font-medium text-primary">
+                  {isComplete ? "AI 分析完成" : "AI 正在分析"}
+                </span>
+              </div>
+              
+              <h2 className="text-2xl md:text-3xl font-bold leading-tight">
+                {analysisSteps[currentStep].text}
               </h2>
-              <p className="text-muted-foreground">
-                {statusText || "请稍候，我们正在进行深度计算"}
+              <p className="text-muted-foreground text-base">
+                {analysisSteps[currentStep].subtitle}
               </p>
             </div>
 

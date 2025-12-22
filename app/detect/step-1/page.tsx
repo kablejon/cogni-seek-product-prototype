@@ -71,14 +71,9 @@ export default function Step1Page() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
-      {/* Background Text */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
-        <div className="bg-text-glow opacity-50">CogniSeek</div>
-      </div>
-      
       {/* Interactive Fog Effect */}
       <div className="absolute inset-0 z-0">
-        <InteractiveFog particleCount={80} color="80, 130, 220" />
+        <InteractiveFog particleCount={80} color="30, 64, 175" />
       </div>
       
       <Header currentStep={1} showProgress />

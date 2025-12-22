@@ -75,7 +75,7 @@ export default function Step3Page() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
-      <InteractiveFog color="99, 102, 241" />
+      <InteractiveFog color="14, 165, 233" />
       <Header currentStep={3} showProgress />
 
       <main className="flex-1 container mx-auto px-4 py-8 md:py-12 relative z-10">

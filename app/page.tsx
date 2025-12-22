@@ -3,10 +3,14 @@
 import Link from "next/link"
 import { ArrowUpRight, Search, Brain, BarChart3, Clock, Star, CheckCircle2 } from "lucide-react"
 import { NetworkAnimation } from "@/components/ui/network-animation"
+import { InteractiveFog } from "@/components/ui/interactive-fog"
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
+    <div className="min-h-screen bg-background text-foreground overflow-x-hidden relative">
+      {/* Interactive Fog Background */}
+      <InteractiveFog color="56, 189, 248" particleCount={120} />
+      
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-white/5">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
@@ -34,24 +38,29 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center pt-20">
+      <section className="relative min-h-screen flex items-center justify-center pt-20 z-10">
+        {/* Network Animation Background */}
+        <div className="absolute inset-0 z-0">
+          <NetworkAnimation nodeCount={80} lineOpacity={0.15} />
+        </div>
+        
         {/* Background Glow */}
-        <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden z-0">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-gradient-radial from-blue-500/20 via-purple-500/10 to-transparent rounded-full blur-3xl animate-glow-pulse" />
         </div>
         
         {/* Background Text */}
-        <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
+        <div className="absolute inset-0 flex items-center justify-center overflow-hidden z-0">
           <div className="bg-text-glow animate-text-reveal">CogniSeek</div>
         </div>
         
         {/* Light Beam */}
-        <div className="absolute top-1/3 left-0 right-0 overflow-hidden">
+        <div className="absolute top-1/3 left-0 right-0 overflow-hidden z-0">
           <div className="light-beam" />
         </div>
         
         {/* Content */}
-        <div className="relative z-10 container mx-auto px-6 text-center">
+        <div className="relative z-20 container mx-auto px-6 text-center">
           <div className="max-w-4xl mx-auto space-y-8">
             {/* Main Title */}
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight animate-fade-in-up">
@@ -98,7 +107,7 @@ export default function Home() {
         </div>
         
         {/* Scroll Indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 animate-pulse-soft">
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 animate-pulse-soft z-20">
           <span className="text-xs text-muted-foreground tracking-widest uppercase">向下滚动</span>
           <div className="w-5 h-8 rounded-full border border-white/20 flex items-start justify-center p-1">
             <div className="w-1 h-2 bg-white/50 rounded-full animate-bounce" />
@@ -107,27 +116,17 @@ export default function Home() {
       </section>
 
       {/* Features Section with Network Animation */}
-      <section id="features" className="relative py-32">
+      <section id="features" className="relative py-32 z-10">
         {/* Network Animation Background */}
-        <div className="absolute inset-0">
+        <div className="absolute inset-0 z-0">
           <NetworkAnimation nodeCount={60} lineOpacity={0.12} />
         </div>
         
         {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background" />
-        
-        {/* Split Text */}
-        <div className="absolute inset-0 flex items-center justify-between px-8 md:px-16 pointer-events-none overflow-hidden">
-          <h2 className="text-4xl md:text-6xl lg:text-8xl font-bold text-white/5 whitespace-nowrap">
-            Understand
-          </h2>
-          <h2 className="text-4xl md:text-6xl lg:text-8xl font-bold text-white/5 whitespace-nowrap">
-            The Space
-          </h2>
-        </div>
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-transparent z-0" />
         
         {/* Content */}
-        <div className="relative z-10 container mx-auto px-6">
+        <div className="relative z-20 container mx-auto px-6">
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-white/5 mb-6">
               <span className="text-xs tracking-widest uppercase text-muted-foreground">[ 工作原理 ]</span>
@@ -172,8 +171,13 @@ export default function Home() {
       </section>
 
       {/* Success Stories */}
-      <section id="stories" className="py-32 relative">
-        <div className="container mx-auto px-6">
+      <section id="stories" className="py-32 relative z-10">
+        {/* Network Animation Background */}
+        <div className="absolute inset-0 z-0">
+          <NetworkAnimation nodeCount={70} lineOpacity={0.12} />
+        </div>
+        
+        <div className="container mx-auto px-6 relative z-10">
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-white/5 mb-6">
               <span className="text-xs tracking-widest uppercase text-muted-foreground">[ 成功案例 ]</span>
@@ -220,13 +224,18 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section id="pricing" className="py-32 relative">
+      <section id="pricing" className="py-32 relative z-10">
+        {/* Network Animation Background */}
+        <div className="absolute inset-0 z-0">
+          <NetworkAnimation nodeCount={60} lineOpacity={0.1} />
+        </div>
+        
         {/* Background glow */}
-        <div className="absolute inset-0 flex items-center justify-center">
+        <div className="absolute inset-0 flex items-center justify-center z-0">
           <div className="w-[600px] h-[400px] bg-gradient-radial from-blue-500/10 via-purple-500/5 to-transparent rounded-full blur-3xl" />
         </div>
         
-        <div className="relative z-10 container mx-auto px-6">
+        <div className="relative z-20 container mx-auto px-6">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-3xl md:text-5xl font-bold mb-6">
               准备好找回你的失物了吗？
@@ -266,8 +275,8 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-white/5 py-12">
-        <div className="container mx-auto px-6">
+      <footer className="border-t border-white/5 py-12 relative z-10">
+        <div className="container mx-auto px-6 relative z-10">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 rounded bg-white flex items-center justify-center">
