@@ -49,11 +49,6 @@ export default function Home() {
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-gradient-radial from-blue-500/20 via-purple-500/10 to-transparent rounded-full blur-3xl animate-glow-pulse" />
         </div>
         
-        {/* Background Text */}
-        <div className="absolute inset-0 flex items-center justify-center overflow-hidden z-0">
-          <div className="bg-text-glow animate-text-reveal">CogniSeek</div>
-        </div>
-        
         {/* Light Beam */}
         <div className="absolute top-1/3 left-0 right-0 overflow-hidden z-0">
           <div className="light-beam" />
