@@ -64,7 +64,7 @@ export default function Step2Page() {
         <InteractiveFog color="29, 78, 216" />
       </div>
       
-      <Header currentStep={2} showProgress />
+      <Header currentStep={3} showProgress />
 
       {/* 主容器 */}
       <main className="container mx-auto px-4 py-8 md:py-12 relative z-10">
@@ -74,7 +74,7 @@ export default function Step2Page() {
           <div className="text-center space-y-2">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--holo-blue)]/10 border border-[var(--holo-blue)]/30 mb-2">
               <Clock className="w-3 h-3" style={{ color: 'var(--holo-blue)' }} />
-              <span className="text-xs font-medium" style={{ color: 'var(--holo-blue)' }}>Step 2 of 5</span>
+              <span className="text-xs font-medium" style={{ color: 'var(--holo-blue)' }}>Step 3 of 6</span>
             </div>
             <h1 className="text-2xl md:text-3xl font-bold">记忆回溯</h1>
             <p className="text-sm text-muted-foreground">

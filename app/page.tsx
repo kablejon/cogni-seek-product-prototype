@@ -28,7 +28,7 @@ export default function Home() {
           </div>
           
           <Link 
-            href="/detect/step-1" 
+            href="/detect/intro" 
             className="btn-xai-primary text-xs"
           >
             开始寻物
@@ -71,7 +71,7 @@ export default function Home() {
             
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4 animate-fade-in-up delay-400" style={{ opacity: 0 }}>
-              <Link href="/detect/step-1" className="btn-xai-primary">
+              <Link href="/detect/intro" className="btn-xai-primary">
                 开始寻物
                 <ArrowUpRight className="w-4 h-4" />
               </Link>
@@ -242,7 +242,7 @@ export default function Home() {
             {/* Features List */}
             <div className="flex flex-wrap justify-center gap-4 mb-10">
               {[
-                "5步智能问答",
+                "6步智能问答",
                 "三维科学分析",
                 "动态排查清单",
                 "87.3%找回率",
@@ -257,7 +257,7 @@ export default function Home() {
               ))}
             </div>
             
-            <Link href="/detect/step-1" className="btn-xai-primary text-base px-8 py-4">
+            <Link href="/detect/intro" className="btn-xai-primary text-base px-8 py-4">
               开始你的寻物之旅
               <ArrowUpRight className="w-5 h-5" />
             </Link>

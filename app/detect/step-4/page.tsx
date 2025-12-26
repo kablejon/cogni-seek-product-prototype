@@ -86,7 +86,7 @@ export default function Step4Page() {
         <InteractiveFog color="8, 145, 178" />
       </div>
       
-      <Header currentStep={4} showProgress />
+      <Header currentStep={5} showProgress />
 
       <main className="container mx-auto px-4 py-8 md:py-12 relative z-10">
         <div className="w-full max-w-4xl mx-auto scifi-container p-6 md:p-10 space-y-10">
@@ -95,7 +95,7 @@ export default function Step4Page() {
           <div className="text-center space-y-2">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--holo-blue)]/10 border border-[var(--holo-blue)]/30 mb-2">
               <Brain className="w-3 h-3" style={{ color: 'var(--holo-blue)' }} />
-              <span className="text-xs font-medium" style={{ color: 'var(--holo-blue)' }}>Step 4 of 5</span>
+              <span className="text-xs font-medium" style={{ color: 'var(--holo-blue)' }}>Step 5 of 6</span>
             </div>
             <h1 className="text-2xl md:text-3xl font-bold">状态还原</h1>
             <p className="text-sm text-muted-foreground">

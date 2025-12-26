@@ -75,7 +75,7 @@ export default function Step1Page() {
         <InteractiveFog particleCount={80} color="30, 64, 175" />
       </div>
 
-      <Header currentStep={1} showProgress />
+      <Header currentStep={2} showProgress />
 
       {/* 主容器 - 毛玻璃悬浮卡片 */}
       <main className="container mx-auto px-4 py-8 md:py-12 relative z-10">
@@ -84,7 +84,7 @@ export default function Step1Page() {
           {/* 标题区 */}
           <div className="text-center space-y-2">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--holo-blue)]/10 border border-[var(--holo-blue)]/30 mb-2">
-              <span className="text-xs font-medium" style={{ color: 'var(--holo-blue)' }}>Step 1 of 5</span>
+              <span className="text-xs font-medium" style={{ color: 'var(--holo-blue)' }}>Step 2 of 6</span>
             </div>
             <h1 className="text-2xl md:text-3xl font-bold">你丢失了什么？</h1>
             <p className="text-sm text-muted-foreground">选择物品类型，帮助我们精准分析</p>
@@ -250,11 +250,11 @@ export default function Step1Page() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => router.push('/')}
+              onClick={() => router.push('/detect/step-0')}
               className="text-xs text-muted-foreground hover:text-white"
             >
               <ChevronLeft className="w-4 h-4 mr-1" />
-              返回首页
+              上一步
             </Button>
           </div>
 

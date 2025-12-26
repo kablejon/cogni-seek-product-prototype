@@ -9,7 +9,7 @@ interface HeaderProps {
   showProgress?: boolean
 }
 
-export function Header({ currentStep, totalSteps = 5, showProgress = false }: HeaderProps) {
+export function Header({ currentStep, totalSteps = 6, showProgress = false }: HeaderProps) {
   const { resetSession } = useSearchStore()
 
   return (
@@ -58,6 +58,7 @@ export function Header({ currentStep, totalSteps = 5, showProgress = false }: He
     </>
   )
 }
+
 
 
 

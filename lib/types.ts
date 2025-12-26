@@ -47,6 +47,11 @@ export interface MoodOption {
 
 // 搜索会话数据
 export interface SearchSession {
+  // Step 0: 场所信息（新增）
+  lossLocationCategory: string; // 丢失场所大类
+  lossLocationSubCategory: string; // 丢失场所子类
+  lossLocationCustom: string; // 自定义场所
+  
   // Step 1: 物品信息
   itemCategory: string;
   itemType: string;
@@ -90,6 +95,11 @@ export interface SearchSession {
 
 // 初始状态
 export const initialSearchSession: SearchSession = {
+  // Step 0
+  lossLocationCategory: '',
+  lossLocationSubCategory: '',
+  lossLocationCustom: '',
+  
   // Step 1
   itemCategory: '',
   itemType: '',

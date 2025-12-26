@@ -65,7 +65,7 @@ export default function Step5Page() {
         <InteractiveFog color="34, 211, 238" />
       </div>
       
-      <Header currentStep={5} showProgress />
+      <Header currentStep={6} showProgress />
 
       {/* 主容器 - 毛玻璃悬浮卡片 */}
       <main className="container mx-auto px-4 py-8 md:py-12 relative z-10">
@@ -75,7 +75,7 @@ export default function Step5Page() {
           <div className="text-center space-y-2">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--holo-blue)]/10 border border-[var(--holo-blue)]/30 mb-2">
               <CheckCircle2 className="w-3 h-3" style={{ color: 'var(--holo-blue)' }} />
-              <span className="text-xs font-medium" style={{ color: 'var(--holo-blue)' }}>Step 5 of 5</span>
+              <span className="text-xs font-medium" style={{ color: 'var(--holo-blue)' }}>Step 6 of 6</span>
             </div>
             <h1 className="text-2xl md:text-3xl font-bold">已排查信息</h1>
             <p className="text-sm text-muted-foreground">告诉我们你已经找过哪些地方，避免重复建议</p>
