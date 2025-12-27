@@ -1056,3 +1056,137 @@
   color: rgba(45, 225, 252, 1);
   box-shadow: 0 0 20px rgba(45, 225, 252, 0.2);
 }
+
+/* ==================== 全息图标动画效果 ==================== */
+
+/* 光爆效果 */
+@keyframes holographic-burst {
+  0% {
+    transform: scale(1);
+    filter: brightness(1) blur(0px);
+  }
+  50% {
+    transform: scale(1.1);
+    filter: brightness(1.5) blur(2px);
+  }
+  100% {
+    transform: scale(1);
+    filter: brightness(1) blur(0px);
+  }
+}
+
+/* 悬浮效果 */
+@keyframes holographic-float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+/* 光晕扩散 */
+@keyframes glow-expand {
+  0% {
+    box-shadow: 0 0 10px rgba(45, 225, 252, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(45, 225, 252, 0.6), 0 0 60px rgba(45, 225, 252, 0.3);
+  }
+  100% {
+    box-shadow: 0 0 10px rgba(45, 225, 252, 0.2);
+  }
+}
+
+/* 磨砂玻璃通透效果 */
+@keyframes glass-clarity {
+  0% {
+    backdrop-filter: blur(8px);
+    opacity: 0.9;
+  }
+  50% {
+    backdrop-filter: blur(4px);
+    opacity: 1;
+  }
+  100% {
+    backdrop-filter: blur(8px);
+    opacity: 0.9;
+  }
+}
+
+/* 边缘高光动画 */
+@keyframes edge-shimmer {
+  0% {
+    opacity: 0.4;
+    transform: translateX(-100%);
+  }
+  50% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0.4;
+    transform: translateX(100%);
+  }
+}
+
+/* 应用动画到选中状态的图标 */
+.holographic-icon-selected {
+  animation: holographic-burst 0.6s ease-out, holographic-float 3s ease-in-out infinite;
+}
+
+.holographic-card-selected {
+  animation: glow-expand 2s ease-in-out infinite, glass-clarity 3s ease-in-out infinite;
+}
+
+/* ==================== 隐藏滚动条 ==================== */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ==================== 能量球特效 ==================== */
+/* 能量球呼吸光效 */
+@keyframes orb-glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 2px #2DE1FC, 0 0 15px rgba(45, 225, 252, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 2px #2DE1FC, 0 0 25px rgba(45, 225, 252, 0.7);
+  }
+}
+
+/* ==================== AI 打字机效果 ==================== */
+@keyframes typewriter {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-typewriter {
+  animation: typewriter 0.6s ease-out forwards;
+}
+
+/* 天色卡片缩放动画 */
+@keyframes scale-in {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-scale-in {
+  animation: scale-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}

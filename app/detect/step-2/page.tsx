@@ -52,43 +52,59 @@ const MACRO_TIME_OPTIONS = [
   },
 ]
 
-// 光线/时段选择（微观）
+// 光线/时段选择（微观）- 氛围感升级
 const LIGHT_PERIODS = [
   { 
     id: 'dawn_morning', 
     label: '凌晨/上午', 
     time: '06:00-11:00',
     icon: '🌅',
-    bgColor: 'rgba(255, 200, 100, 0.1)', // 暖橙色
-    borderColor: 'rgba(255, 200, 100, 0.3)',
-    lightCondition: '光线明亮',
+    iconName: 'Sunrise',
+    // 晨曦蓝到浅白
+    atmosphereGradient: 'linear-gradient(135deg, rgba(147, 197, 253, 0.15) 0%, rgba(255, 255, 255, 0.08) 100%)',
+    selectedBorder: '#93C5FD',
+    glowColor: 'rgba(147, 197, 253, 0.4)',
+    aiInsight: '☀️ AI 分析：晨间光线清冷明亮，视野清晰，物品若在开阔区域应较易发现。',
+    visualHint: '清冷、清晰',
   },
   { 
     id: 'noon_afternoon', 
     label: '中午/下午', 
     time: '11:00-17:00',
     icon: '☀️',
-    bgColor: 'rgba(255, 220, 120, 0.15)', // 强烈阳光
-    borderColor: 'rgba(255, 220, 120, 0.4)',
-    lightCondition: '光线最强',
+    iconName: 'Sun',
+    // 暖金黄
+    atmosphereGradient: 'linear-gradient(135deg, rgba(251, 191, 36, 0.2) 0%, rgba(252, 211, 77, 0.1) 100%)',
+    selectedBorder: '#FCD34D',
+    glowColor: 'rgba(251, 191, 36, 0.5)',
+    aiInsight: '☀️ AI 分析：强光环境下，物品容易被阴影遮挡，建议检查物体背光面及阴影区域。',
+    visualHint: '强烈、明亮',
   },
   { 
     id: 'dusk', 
     label: '黄昏/傍晚', 
     time: '17:00-19:00',
     icon: '🌇',
-    bgColor: 'rgba(255, 150, 80, 0.1)', // 夕阳橙
-    borderColor: 'rgba(255, 150, 80, 0.3)',
-    lightCondition: '光线柔和',
+    iconName: 'CloudSun',
+    // 晚霞紫到橙色
+    atmosphereGradient: 'linear-gradient(135deg, rgba(167, 139, 250, 0.18) 0%, rgba(251, 146, 60, 0.15) 50%, rgba(249, 115, 22, 0.12) 100%)',
+    selectedBorder: '#FB923C',
+    glowColor: 'rgba(249, 115, 22, 0.5)',
+    aiInsight: '🌇 AI 分析：光线快速变化期，人眼适应度下降，物品极易滑入视觉盲区，重点排查过渡区域。',
+    visualHint: '昏暗、复杂',
   },
   { 
     id: 'night', 
     label: '晚上/深夜', 
     time: '19:00-06:00',
     icon: '🌑',
-    bgColor: 'rgba(30, 64, 175, 0.15)', // 深蓝色
-    borderColor: 'rgba(30, 64, 175, 0.4)',
-    lightCondition: '光线昏暗',
+    iconName: 'Moon',
+    // 深邃蓝黑
+    atmosphereGradient: 'linear-gradient(135deg, rgba(30, 58, 138, 0.25) 0%, rgba(17, 24, 39, 0.2) 100%)',
+    selectedBorder: '#3B82F6',
+    glowColor: 'rgba(59, 130, 246, 0.5)',
+    aiInsight: '🌑 AI 分析：可见度低，若当时未开灯，请重点排查脚下及低处缝隙、家具下方等区域。',
+    visualHint: '视野受限',
   },
 ]
 
@@ -99,6 +115,7 @@ export default function Step2Page() {
   const [selectedMacroTime, setSelectedMacroTime] = useState<string>('')
   const [selectedLightPeriod, setSelectedLightPeriod] = useState<string>('')
   const [isTimeUncertain, setIsTimeUncertain] = useState(false) // 改为"不确定"开关
+  const [fuzzyTimeMode, setFuzzyTimeMode] = useState(false) // 新增：模糊时间模式
   const [customDate, setCustomDate] = useState('')
   const [customTime, setCustomTime] = useState('')
 
@@ -115,6 +132,7 @@ export default function Step2Page() {
   const canProceed = selectedMacroTime && (
     (!needsLightDetail && !needsCustomTime) || // 刚刚
     selectedLightPeriod || // 今天/昨天 + 光线
+    fuzzyTimeMode || // 模糊时间模式
     (needsCustomTime && customDate) // 更早 + 日期（时间可选）
   )
 
@@ -150,12 +168,18 @@ export default function Step2Page() {
         aiSearchMode = '日期模式 - 分析全天光线和行为模式'
         lightContext = '全天综合分析'
       }
+    } else if (fuzzyTimeMode) {
+      // 模糊时间模式
+      const macroLabel = selectedMacroConfig?.label || ''
+      timeDescription = `${macroLabel} (时间不确定)`
+      lightContext = '全天光线综合分析'
+      aiSearchMode = '模糊时间模式 - AI将分析全天的光线变化与行为轨迹'
     } else if (selectedLightPeriod) {
       // 今天/昨天 + 光线模式
       const macroLabel = selectedMacroConfig?.label || ''
       const lightConfig = LIGHT_PERIODS.find(p => p.id === selectedLightPeriod)
       timeDescription = `${macroLabel} ${lightConfig?.label || ''}`
-      lightContext = lightConfig?.lightCondition || ''
+      lightContext = lightConfig?.aiInsight || ''
       aiSearchMode = '光线模式 - 重点排查对应光线条件区域'
     } else {
       // 刚刚模式
@@ -172,12 +196,26 @@ export default function Step2Page() {
     router.push('/detect/step-3')
   }
 
+  // 获取当前选中的光线时段配置
+  const selectedPeriodConfig = LIGHT_PERIODS.find(p => p.id === selectedLightPeriod)
+
   return (
     <div className="min-h-screen bg-background flex flex-col relative">
       {/* 星空背景 - 固定定位 */}
       <div className="fixed inset-0 z-0">
         <InteractiveFog particleCount={100} color="56, 189, 248" />
       </div>
+
+      {/* 全局氛围联动层 */}
+      {selectedLightPeriod && selectedPeriodConfig && (
+        <div 
+          className="fixed inset-0 z-0 transition-all duration-1000 ease-out pointer-events-none"
+          style={{
+            background: selectedPeriodConfig.atmosphereGradient,
+            opacity: 0.15,
+          }}
+        />
+      )}
 
       <Header currentStep={3} showProgress />
 
@@ -236,50 +274,112 @@ export default function Step2Page() {
             </div>
           </div>
 
-          {/* 光线/时段选择（条件展开 - 今天/昨天） */}
+          {/* 光线/时段选择（条件展开 - 今天/昨天） - 氛围感升级 */}
           {needsLightDetail && (
-            <div className="space-y-4 animate-fade-in-up">
+            <div className="space-y-5 animate-fade-in-up">
               <h2 className="text-base md:text-lg font-bold text-white/90">
                 当时的光线/时段是？
               </h2>
-              <div className="flex flex-wrap gap-3">
-                {LIGHT_PERIODS.map((period) => (
-                  <button
-                    key={period.id}
-                    onClick={() => setSelectedLightPeriod(period.id)}
-                    className={`
-                      px-5 py-3 rounded-full text-sm font-medium
-                      border transition-all duration-300
-                      ${selectedLightPeriod === period.id 
-                        ? 'border-[var(--holo-blue)] text-white shadow-[0_0_20px_rgba(45,225,252,0.3)]' 
-                        : 'bg-white/5 border-white/20 text-white/80 hover:bg-white/10 hover:border-white/40'
+              
+              {/* 天色卡片组 - 横向排列 */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                {LIGHT_PERIODS.map((period) => {
+                  const isSelected = selectedLightPeriod === period.id
+                  const isDisabled = fuzzyTimeMode
+                  
+                  return (
+                    <button
+                      key={period.id}
+                      onClick={() => !isDisabled && setSelectedLightPeriod(period.id)}
+                      disabled={isDisabled}
+                      className={`
+                        relative overflow-hidden rounded-2xl px-4 py-5
+                        border-2 transition-all duration-500
+                        ${isDisabled 
+                          ? 'opacity-40 cursor-not-allowed bg-white/5 border-white/10'
+                          : isSelected 
+                            ? 'shadow-lg scale-[1.02]' 
+                            : 'bg-white/5 border-white/10 hover:bg-white/8 hover:border-white/20 hover:scale-[1.01]'
+                        }
+                        flex flex-col items-center gap-2
+                      `}
+                      style={
+                        !isDisabled && isSelected
+                          ? { 
+                              background: period.atmosphereGradient,
+                              borderColor: period.selectedBorder,
+                              boxShadow: `0 0 25px ${period.glowColor}, inset 0 0 20px ${period.glowColor}`,
+                            }
+                          : !isDisabled
+                            ? { background: period.atmosphereGradient }
+                            : {}
                       }
-                      flex items-center gap-2
-                    `}
-                    style={
-                      selectedLightPeriod === period.id
-                        ? { backgroundColor: period.bgColor, borderColor: period.borderColor }
-                        : {}
-                    }
-                  >
-                    {selectedLightPeriod === period.id && <Check className="w-3.5 h-3.5" />}
-                    <span className="text-base">{period.icon}</span>
-                    <div className="flex flex-col items-start">
-                      <span>{period.label}</span>
-                      <span className="text-xs opacity-60 font-mono">{period.time}</span>
-                    </div>
-                  </button>
-                ))}
+                    >
+                      {/* 底部光刃效果 - 选中时 */}
+                      {isSelected && !isDisabled && (
+                        <div 
+                          className="absolute bottom-0 left-0 right-0 h-1 animate-fade-in-up"
+                          style={{
+                            background: `linear-gradient(to right, transparent, ${period.selectedBorder}, transparent)`,
+                            boxShadow: `0 0 15px ${period.glowColor}`,
+                          }}
+                        />
+                      )}
+                      
+                      {/* 选中勾 */}
+                      {isSelected && !isDisabled && (
+                        <div 
+                          className="absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center animate-scale-in"
+                          style={{ backgroundColor: period.selectedBorder }}
+                        >
+                          <Check className="w-3 h-3 text-black font-bold" />
+                        </div>
+                      )}
+                      
+                      {/* 图标 - 纯白发光 */}
+                      <span 
+                        className={`text-3xl transition-all duration-500 ${isSelected ? 'drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]' : ''}`}
+                        style={isSelected ? { filter: 'brightness(1.3)' } : {}}
+                      >
+                        {period.icon}
+                      </span>
+                      
+                      {/* 文字 */}
+                      <div className="flex flex-col items-center gap-0.5">
+                        <span className={`text-sm font-medium ${isSelected ? 'text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]' : 'text-white/90'}`}>
+                          {period.label}
+                        </span>
+                        <span className={`text-xs font-mono ${isSelected ? 'text-white/80' : 'text-white/60'}`}>
+                          {period.time}
+                        </span>
+                      </div>
+                    </button>
+                  )
+                })}
               </div>
 
-              {/* 光线提示 */}
-              {selectedLightPeriod && (
-                <div className="p-4 rounded-xl bg-[var(--holo-blue)]/5 border border-[var(--holo-blue)]/20 animate-fade-in-up delay-200">
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    💡 <span className="text-white">光线分析：</span>
-                    {LIGHT_PERIODS.find(p => p.id === selectedLightPeriod)?.lightCondition}
-                    {selectedLightPeriod === 'night' && ' - AI将重点排查阴影处、角落等低光区域'}
-                    {selectedLightPeriod === 'noon_afternoon' && ' - AI将优先排查视野开阔区域'}
+              {/* AI 智能分析 - 升级版（毛玻璃增强） */}
+              {selectedLightPeriod && !fuzzyTimeMode && (
+                <div className="relative flex items-start gap-3 p-4 rounded-xl animate-fade-in-up overflow-hidden">
+                  {/* 背景层 - 增强毛玻璃效果 */}
+                  <div 
+                    className="absolute inset-0 bg-[var(--holo-blue)]/5 backdrop-blur-lg border border-[var(--holo-blue)]/25 rounded-xl"
+                    style={{
+                      backdropFilter: 'blur(12px) saturate(180%)',
+                    }}
+                  />
+                  
+                  {/* 发光 AI 图标 */}
+                  <div 
+                    className="relative flex-shrink-0 w-8 h-8 rounded-full bg-[var(--holo-blue)]/20 flex items-center justify-center animate-pulse"
+                    style={{ boxShadow: '0 0 15px rgba(45, 225, 252, 0.4)' }}
+                  >
+                    <span className="text-lg">🤖</span>
+                  </div>
+                  
+                  {/* 打字机效果文字 */}
+                  <p className="relative text-sm text-white/90 leading-relaxed flex-1 animate-typewriter">
+                    {LIGHT_PERIODS.find(p => p.id === selectedLightPeriod)?.aiInsight}
                   </p>
                 </div>
               )}
@@ -369,11 +469,28 @@ export default function Step2Page() {
                 </button>
               </div>
 
-              {/* 智能提示 */}
+              {/* 智能提示（毛玻璃增强） */}
               {customDate && (
-                <div className="p-4 rounded-xl bg-[var(--holo-blue)]/5 border border-[var(--holo-blue)]/20 animate-fade-in-up delay-200">
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    💡 <span className="text-white">时空分析：</span>
+                <div className="relative flex items-start gap-3 p-4 rounded-xl animate-fade-in-up delay-200 overflow-hidden">
+                  {/* 背景层 - 增强毛玻璃效果 */}
+                  <div 
+                    className="absolute inset-0 bg-[var(--holo-blue)]/5 backdrop-blur-lg border border-[var(--holo-blue)]/25 rounded-xl"
+                    style={{
+                      backdropFilter: 'blur(12px) saturate(180%)',
+                    }}
+                  />
+                  
+                  {/* 发光图标 */}
+                  <div 
+                    className="relative flex-shrink-0 w-8 h-8 rounded-full bg-[var(--holo-blue)]/20 flex items-center justify-center"
+                    style={{ boxShadow: '0 0 15px rgba(45, 225, 252, 0.4)' }}
+                  >
+                    <span className="text-lg">🤖</span>
+                  </div>
+                  
+                  {/* 文字 */}
+                  <p className="relative text-sm text-white/90 leading-relaxed flex-1">
+                    <span className="font-medium">时空分析：</span>
                     {customTime 
                       ? `基于 ${customDate} ${customTime}，${isTimeUncertain ? 'AI将分析全天的光线变化和行为轨迹' : 'AI将重点排查该时间点后3小时内的视觉盲区'}` 
                       : `基于 ${customDate}，AI将分析全天的光线变化和行为模式`
@@ -381,6 +498,87 @@ export default function Step2Page() {
                   </p>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* AI 模式切换器 - 升级版 */}
+          {needsLightDetail && (
+            <div className="relative overflow-hidden rounded-xl animate-fade-in-up">
+              {/* 控制台背景层 */}
+              <div 
+                className="absolute inset-0 bg-gradient-to-r from-slate-900/60 via-slate-800/50 to-slate-900/60 backdrop-blur-md border border-[var(--holo-blue)]/40 rounded-xl"
+              />
+              
+              {/* 底部光刃效果 */}
+              <div 
+                className={`
+                  absolute bottom-0 left-0 right-0 h-0.5 transition-all duration-500
+                  ${fuzzyTimeMode 
+                    ? 'bg-gradient-to-r from-transparent via-[var(--cyber-green)] to-transparent opacity-80' 
+                    : 'bg-gradient-to-r from-transparent via-[var(--holo-blue)]/30 to-transparent opacity-40'
+                  }
+                `}
+              />
+              
+              {/* 内容区 */}
+              <div className="relative flex items-center justify-between p-5">
+                <div className="flex items-start gap-3 flex-1">
+                  {/* 模式图标 */}
+                  <div 
+                    className={`
+                      flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center
+                      transition-all duration-500
+                      ${fuzzyTimeMode 
+                        ? 'bg-[var(--cyber-green)]/20 text-[var(--cyber-green)]' 
+                        : 'bg-[var(--holo-blue)]/20 text-[var(--holo-blue)]'
+                      }
+                    `}
+                    style={{
+                      boxShadow: fuzzyTimeMode 
+                        ? '0 0 20px rgba(0, 255, 157, 0.3)' 
+                        : '0 0 15px rgba(45, 225, 252, 0.2)'
+                    }}
+                  >
+                    <span className="text-xl">{fuzzyTimeMode ? '📡' : '🔒'}</span>
+                  </div>
+                  
+                  {/* 文字说明 */}
+                  <div className="flex flex-col gap-1">
+                    <span className="text-sm font-semibold text-white">
+                      {fuzzyTimeMode ? '广域搜索模式' : '精确锁定模式'}
+                    </span>
+                    <span className="text-xs text-white/70 leading-relaxed">
+                      {fuzzyTimeMode 
+                        ? 'AI 将自动排查前后相邻时段（±3小时）' 
+                        : 'AI 仅分析选中的时段'}
+                    </span>
+                  </div>
+                </div>
+                
+                {/* 开关按钮 */}
+                <button
+                  onClick={() => {
+                    setFuzzyTimeMode(!fuzzyTimeMode)
+                    if (!fuzzyTimeMode) {
+                      setSelectedLightPeriod('') // 开启模糊模式时清除选择
+                    }
+                  }}
+                  className={`
+                    relative w-14 h-7 rounded-full transition-all duration-500 flex-shrink-0
+                    ${fuzzyTimeMode 
+                      ? 'bg-[var(--cyber-green)] shadow-[0_0_20px_rgba(0,255,157,0.5)]' 
+                      : 'bg-white/20 hover:bg-white/30'}
+                  `}
+                >
+                  <div 
+                    className={`
+                      absolute top-1 w-5 h-5 bg-white rounded-full shadow-lg
+                      transition-all duration-500
+                      ${fuzzyTimeMode ? 'left-8' : 'left-1'}
+                    `}
+                  />
+                </button>
+              </div>
             </div>
           )}
 
