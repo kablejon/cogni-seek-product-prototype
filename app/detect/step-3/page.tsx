@@ -102,19 +102,15 @@ export default function Step3Page() {
           
           {/* 标题区 */}
           <div className="text-center space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--holo-blue)]/10 border border-[var(--holo-blue)]/30 mb-2">
-              <MapPin className="w-3 h-3" style={{ color: 'var(--holo-blue)' }} />
-              <span className="text-xs font-medium" style={{ color: 'var(--holo-blue)' }}>Step 4 of 6</span>
-            </div>
             <h1 className="text-2xl md:text-3xl font-bold">最后目击</h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-base md:text-lg text-white/70">
               你<span className="text-[var(--cyber-green)] font-semibold">最后一次看见它</span>是在哪里？
             </p>
           </div>
 
           {/* 场景大卡片 - 4选1 */}
           <div className="space-y-4">
-            <h2 className="text-sm font-semibold text-muted-foreground">选择场景</h2>
+            <h2 className="text-base md:text-lg font-bold text-white/90">选择场景</h2>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               {SCENE_CARDS.map((scene) => {
                 const isSelected = selectedScene === scene.id

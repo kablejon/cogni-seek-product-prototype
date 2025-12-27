@@ -65,17 +65,14 @@ export default function Step0Page() {
           
           {/* 标题区 */}
           <div className="text-center space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--holo-blue)]/10 border border-[var(--holo-blue)]/30 mb-2">
-              <span className="text-xs font-medium" style={{ color: 'var(--holo-blue)' }}>Step 1 of 6</span>
-            </div>
             <h1 className="text-2xl md:text-3xl font-bold">大概在什么场所丢失？</h1>
-            <p className="text-sm text-muted-foreground">选择最后可能出现的场所类型</p>
+            <p className="text-base md:text-lg text-white/70">选择最后可能出现的场所类型</p>
           </div>
 
           {/* Grid 宫格 - 场所大类 */}
           <div className="space-y-4">
-            <h2 className="text-sm font-semibold text-muted-foreground">场所类型</h2>
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+            <h2 className="text-base md:text-lg font-bold text-white/90">场所类型</h2>
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
               {locationCategories.map((category) => {
                 const Icon = LOCATION_ICONS[category.id as keyof typeof LOCATION_ICONS] || MapPin
                 const isSelected = selectedCategory === category.id
@@ -92,10 +89,10 @@ export default function Step0Page() {
                       </div>
                     )}
                     
-                    <div className="flex flex-col items-center gap-2 py-4">
-                      <div className="text-3xl mb-1">{category.icon}</div>
-                      <Icon className={`w-6 h-6 transition-all ${isSelected ? 'text-[var(--holo-blue)]' : 'text-white/70 group-hover:text-white'}`} strokeWidth={1.5} />
-                      <span className={`text-xs font-medium ${isSelected ? 'text-white' : 'text-white/80'}`}>
+                    <div className="flex flex-col items-center gap-1.5 py-5">
+                      <div className="text-2xl">{category.icon}</div>
+                      <Icon className={`w-5 h-5 transition-all ${isSelected ? 'text-[var(--holo-blue)]' : 'text-white/70 group-hover:text-white'}`} strokeWidth={1.5} />
+                      <span className={`text-sm font-medium ${isSelected ? 'text-white' : 'text-white/80'}`}>
                         {category.label}
                       </span>
                     </div>
@@ -108,15 +105,23 @@ export default function Step0Page() {
           {/* 具体位置 */}
           {selectedCategory && (
             <div className="space-y-4 animate-fade-in-up">
-              <h2 className="text-sm font-semibold text-muted-foreground">具体位置</h2>
-              <div className="flex flex-wrap gap-2">
+              <h2 className="text-base md:text-lg font-bold text-white/90">具体位置</h2>
+              <div className="flex flex-wrap gap-3">
                 {locationCategories.find(c => c.id === selectedCategory)?.subLocations.map((subLoc) => (
                   <button
                     key={subLoc.id}
                     onClick={() => handleSubLocationSelect(subLoc.id)}
-                    className={`chip ${selectedSubLocation === subLoc.id ? 'chip-selected' : ''}`}
+                    className={`
+                      px-5 py-3 rounded-full text-sm font-medium
+                      border transition-all duration-300
+                      ${selectedSubLocation === subLoc.id 
+                        ? 'bg-[var(--holo-blue)]/20 border-[var(--holo-blue)] text-white shadow-[0_0_20px_rgba(45,225,252,0.3)]' 
+                        : 'bg-white/5 border-white/20 text-white/80 hover:bg-white/10 hover:border-white/40'
+                      }
+                      flex items-center gap-2
+                    `}
                   >
-                    {selectedSubLocation === subLoc.id && <Check className="w-3 h-3" />}
+                    {selectedSubLocation === subLoc.id && <Check className="w-3.5 h-3.5" />}
                     {subLoc.label}
                   </button>
                 ))}

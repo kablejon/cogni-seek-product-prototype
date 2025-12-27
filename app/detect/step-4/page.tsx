@@ -93,12 +93,8 @@ export default function Step4Page() {
           
           {/* 标题区 */}
           <div className="text-center space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--holo-blue)]/10 border border-[var(--holo-blue)]/30 mb-2">
-              <Brain className="w-3 h-3" style={{ color: 'var(--holo-blue)' }} />
-              <span className="text-xs font-medium" style={{ color: 'var(--holo-blue)' }}>Step 5 of 6</span>
-            </div>
             <h1 className="text-2xl md:text-3xl font-bold">状态还原</h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-base md:text-lg text-white/70">
               回想<span className="text-[var(--cyber-green)] font-semibold">当时的心理状态</span>和<span className="text-[var(--cyber-green)] font-semibold">行为模式</span>
             </p>
           </div>
