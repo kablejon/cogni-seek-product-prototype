@@ -8,8 +8,11 @@ import { InteractiveFog } from "@/components/ui/interactive-fog"
 export default function Home() {
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden relative">
-      {/* Interactive Fog Background */}
-      <InteractiveFog color="56, 189, 248" particleCount={120} />
+      {/* Global Background Animations - Fixed Position */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <InteractiveFog color="56, 189, 248" particleCount={50} />
+        <NetworkAnimation nodeCount={35} lineOpacity={0.1} />
+      </div>
       
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-white/5">
@@ -39,11 +42,6 @@ export default function Home() {
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center pt-20 z-10">
-        {/* Network Animation Background */}
-        <div className="absolute inset-0 z-0">
-          <NetworkAnimation nodeCount={80} lineOpacity={0.15} />
-        </div>
-        
         {/* Background Glow */}
         <div className="absolute inset-0 overflow-hidden z-0">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-gradient-radial from-blue-500/20 via-purple-500/10 to-transparent rounded-full blur-3xl animate-glow-pulse" />
@@ -110,13 +108,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Features Section with Network Animation */}
+      {/* Features Section */}
       <section id="features" className="relative py-32 z-10">
-        {/* Network Animation Background */}
-        <div className="absolute inset-0 z-0">
-          <NetworkAnimation nodeCount={60} lineOpacity={0.12} />
-        </div>
-        
         {/* Gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-transparent z-0" />
         
@@ -167,11 +160,6 @@ export default function Home() {
 
       {/* Success Stories */}
       <section id="stories" className="py-32 relative z-10">
-        {/* Network Animation Background */}
-        <div className="absolute inset-0 z-0">
-          <NetworkAnimation nodeCount={70} lineOpacity={0.12} />
-        </div>
-        
         <div className="container mx-auto px-6 relative z-10">
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-white/5 mb-6">
