@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { ChevronRight, ChevronLeft, Brain, Check, Radio, Plus, AlertTriangle } from "lucide-react"
+import { ChevronRight, ChevronLeft, Brain, Check, Radio, Plus, AlertTriangle, X } from "lucide-react"
 import { Header } from "@/components/shared/header"
 import { useSearchStore } from "@/lib/store"
 import { InteractiveFog } from "@/components/ui/interactive-fog"
@@ -340,19 +340,36 @@ export default function Step4Page() {
               })}
 
               {/* 已添加的自定义活动 */}
-              {customActivities.map((custom, idx) => (
-                <button
-                  key={`custom_${custom}`}
-                  onClick={() => {
-                    setCustomActivities(customActivities.filter((_, i) => i !== idx))
-                    setSelectedActivities(selectedActivities.filter(a => a !== `custom_${custom}`))
-                  }}
-                  className="px-4 py-2.5 rounded-full text-sm font-medium bg-[var(--holo-blue)]/20 border border-[var(--holo-blue)] text-white shadow-[0_0_15px_rgba(45,225,252,0.3)] flex items-center gap-2"
-                >
-                  <Check className="w-3.5 h-3.5" />
-                  <span>{custom}</span>
-                </button>
-              ))}
+              {customActivities.map((custom, idx) => {
+                const isSelected = selectedActivities.includes(`custom_${custom}`)
+                return (
+                  <button
+                    key={`custom_${custom}`}
+                    onClick={() => toggleActivity(`custom_${custom}`)}
+                    className={`
+                      px-4 py-2.5 rounded-full text-sm font-medium
+                      border transition-all duration-300 flex items-center gap-2 relative group
+                      ${isSelected 
+                        ? 'bg-[var(--holo-blue)]/20 border-[var(--holo-blue)] text-white shadow-[0_0_15px_rgba(45,225,252,0.3)]' 
+                        : 'bg-white/5 border-white/20 text-white/80 hover:bg-white/10 hover:border-white/40'
+                      }
+                    `}
+                  >
+                    {isSelected && <Check className="w-3.5 h-3.5" />}
+                    <span>{custom}</span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setCustomActivities(customActivities.filter((_, i) => i !== idx))
+                        setSelectedActivities(selectedActivities.filter(a => a !== `custom_${custom}`))
+                      }}
+                      className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity text-white/40 hover:text-red-400"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </button>
+                )
+              })}
 
               {/* 自定义活动输入 */}
               {!showActivityCustom ? (
@@ -364,29 +381,29 @@ export default function Step4Page() {
                   <span>其他动作</span>
                 </button>
               ) : (
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={activityCustomText}
-                    onChange={(e) => setActivityCustomText(e.target.value)}
-                    placeholder="输入动作..."
-                    autoFocus
-                    className="px-4 py-2 rounded-full text-sm bg-[var(--holo-blue)]/10 border-2 border-[var(--holo-blue)] focus:outline-none w-32"
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') addCustomActivity()
-                      if (e.key === 'Escape') {
-                        setShowActivityCustom(false)
-                        setActivityCustomText('')
-                      }
-                    }}
-                  />
-                  <button
-                    onClick={addCustomActivity}
-                    className="p-2 rounded-full bg-[var(--cyber-green)] text-black"
-                  >
-                    <Check className="w-4 h-4" />
-                  </button>
-                </div>
+                <input
+                  type="text"
+                  value={activityCustomText}
+                  onChange={(e) => setActivityCustomText(e.target.value)}
+                  placeholder="输入动作..."
+                  autoFocus
+                  className="px-4 py-2 rounded-full text-sm bg-[var(--holo-blue)]/10 border-2 border-[var(--holo-blue)] focus:outline-none w-32 placeholder:text-white/40"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') addCustomActivity()
+                    if (e.key === 'Escape') {
+                      setShowActivityCustom(false)
+                      setActivityCustomText('')
+                    }
+                  }}
+                  onBlur={() => {
+                    if (activityCustomText.trim()) {
+                      addCustomActivity()
+                    } else {
+                      setShowActivityCustom(false)
+                      setActivityCustomText('')
+                    }
+                  }}
+                />
               )}
             </div>
           </div>
@@ -474,19 +491,36 @@ export default function Step4Page() {
                     })}
 
                     {/* 已添加的自定义干扰 */}
-                    {customDistractions.map((custom, idx) => (
-                      <button
-                        key={`custom_${custom}`}
-                        onClick={() => {
-                          setCustomDistractions(customDistractions.filter((_, i) => i !== idx))
-                          setSelectedDistractions(selectedDistractions.filter(d => d !== `custom_${custom}`))
-                        }}
-                        className="px-4 py-2.5 rounded-full text-sm font-medium bg-[#FF9F0A]/20 border-2 border-[#FF9F0A] text-white shadow-[0_0_15px_rgba(255,159,10,0.3)] flex items-center gap-2"
-                      >
-                        <Check className="w-3.5 h-3.5" />
-                        <span>{custom}</span>
-                      </button>
-                    ))}
+                    {customDistractions.map((custom, idx) => {
+                      const isSelected = selectedDistractions.includes(`custom_${custom}`)
+                      return (
+                        <button
+                          key={`custom_${custom}`}
+                          onClick={() => toggleDistraction(`custom_${custom}`)}
+                          className={`
+                            px-4 py-2.5 rounded-full text-sm font-medium
+                            border-2 transition-all duration-300 flex items-center gap-2 relative group
+                            ${isSelected 
+                              ? 'bg-[#FF9F0A]/20 border-[#FF9F0A] text-white shadow-[0_0_15px_rgba(255,159,10,0.3)]' 
+                              : 'bg-transparent border-[#FF9F0A]/40 text-white/80 hover:bg-[#FF9F0A]/10 hover:border-[#FF9F0A]/60'
+                            }
+                          `}
+                        >
+                          {isSelected && <Check className="w-3.5 h-3.5" />}
+                          <span>{custom}</span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setCustomDistractions(customDistractions.filter((_, i) => i !== idx))
+                              setSelectedDistractions(selectedDistractions.filter(d => d !== `custom_${custom}`))
+                            }}
+                            className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity text-white/40 hover:text-red-400"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </button>
+                      )
+                    })}
 
                     {/* 自定义干扰输入 */}
                     {!showDistractionCustom ? (
@@ -498,29 +532,29 @@ export default function Step4Page() {
                         <span>其他干扰</span>
                       </button>
                     ) : (
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="text"
-                          value={distractionCustomText}
-                          onChange={(e) => setDistractionCustomText(e.target.value)}
-                          placeholder="输入干扰..."
-                          autoFocus
-                          className="px-4 py-2 rounded-full text-sm bg-[#FF9F0A]/10 border-2 border-[#FF9F0A] focus:outline-none w-32 placeholder:text-white/40"
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') addCustomDistraction()
-                            if (e.key === 'Escape') {
-                              setShowDistractionCustom(false)
-                              setDistractionCustomText('')
-                            }
-                          }}
-                        />
-                        <button
-                          onClick={addCustomDistraction}
-                          className="p-2 rounded-full bg-[#FF9F0A] text-black shadow-[0_0_10px_rgba(255,159,10,0.4)]"
-                        >
-                          <Check className="w-4 h-4" />
-                        </button>
-                      </div>
+                      <input
+                        type="text"
+                        value={distractionCustomText}
+                        onChange={(e) => setDistractionCustomText(e.target.value)}
+                        placeholder="输入干扰..."
+                        autoFocus
+                        className="px-4 py-2 rounded-full text-sm bg-[#FF9F0A]/10 border-2 border-[#FF9F0A] focus:outline-none w-32 placeholder:text-white/40"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') addCustomDistraction()
+                          if (e.key === 'Escape') {
+                            setShowDistractionCustom(false)
+                            setDistractionCustomText('')
+                          }
+                        }}
+                        onBlur={() => {
+                          if (distractionCustomText.trim()) {
+                            addCustomDistraction()
+                          } else {
+                            setShowDistractionCustom(false)
+                            setDistractionCustomText('')
+                          }
+                        }}
+                      />
                     )}
                   </div>
 

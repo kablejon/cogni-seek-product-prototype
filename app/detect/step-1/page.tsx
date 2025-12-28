@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { ChevronRight, ChevronLeft, Check } from "lucide-react"
+import { ChevronRight, ChevronLeft, Check, X } from "lucide-react"
 import { Header } from "@/components/shared/header"
 import { useSearchStore } from "@/lib/store"
 import { itemCategories } from "@/lib/data"
@@ -633,7 +633,7 @@ export default function Step1Page() {
                       }}
                       className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity text-white/60 hover:text-red-400"
                     >
-                      ×
+                      <X className="w-3.5 h-3.5" />
                     </button>
                   </button>
                 ))}

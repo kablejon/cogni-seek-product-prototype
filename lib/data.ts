@@ -12,7 +12,7 @@ export const itemCategories: ItemCategory[] = [
       { id: 'glasses', label: '眼镜/墨镜' },
       { id: 'watch', label: '手表' },
       { id: 'umbrella', label: '雨伞' },
-      { id: 'daily_other', label: '其他日常物品' },
+      { id: 'daily_other', label: '+ 其他' },
     ],
   },
   {
@@ -29,7 +29,7 @@ export const itemCategories: ItemCategory[] = [
       { id: 'usb', label: 'U盘/硬盘' },
       { id: 'remote', label: '遥控器' },
       { id: 'camera', label: '相机' },
-      { id: 'digital_other', label: '其他数码产品' },
+      { id: 'digital_other', label: '+ 其他' },
     ],
   },
   {
@@ -43,7 +43,7 @@ export const itemCategories: ItemCategory[] = [
       { id: 'bank_card', label: '银行卡' },
       { id: 'membership_card', label: '会员卡/门禁卡' },
       { id: 'important_docs', label: '重要文件/合同' },
-      { id: 'docs_other', label: '其他证件' },
+      { id: 'docs_other', label: '+ 其他' },
     ],
   },
   {
@@ -56,7 +56,7 @@ export const itemCategories: ItemCategory[] = [
       { id: 'earrings', label: '耳环/耳钉' },
       { id: 'bracelet', label: '手链/手镯' },
       { id: 'cash', label: '现金' },
-      { id: 'valuables_other', label: '其他贵重物品' },
+      { id: 'valuables_other', label: '+ 其他' },
     ],
   },
   {
@@ -68,7 +68,7 @@ export const itemCategories: ItemCategory[] = [
       { id: 'dog', label: '狗' },
       { id: 'bird', label: '鸟类' },
       { id: 'hamster', label: '仓鼠/兔子' },
-      { id: 'pets_other', label: '其他宠物' },
+      { id: 'pets_other', label: '+ 其他' },
     ],
   },
   {
@@ -81,7 +81,7 @@ export const itemCategories: ItemCategory[] = [
       { id: 'medicine', label: '药品' },
       { id: 'toys', label: '玩具' },
       { id: 'book', label: '书籍' },
-      { id: 'completely_other', label: '其他（自定义）' },
+      { id: 'completely_other', label: '+ 其他' },
     ],
   },
 ];

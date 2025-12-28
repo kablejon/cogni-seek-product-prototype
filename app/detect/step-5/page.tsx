@@ -387,15 +387,15 @@ export default function Step5Page() {
                     {customSearchZones.map((zone, index) => (
                       <div
                         key={`custom_${index}`}
-                        className="px-3 py-1.5 rounded-full text-xs font-medium bg-[#2DE1FC]/20 border border-[#2DE1FC]/50 text-white shadow-[0_0_10px_rgba(45,225,252,0.2)] flex items-center gap-1.5"
+                        className="px-3 py-1.5 rounded-full text-xs font-medium bg-[#2DE1FC]/20 border border-[#2DE1FC]/50 text-white shadow-[0_0_10px_rgba(45,225,252,0.2)] flex items-center gap-1.5 relative group"
                       >
                         <Check className="w-3 h-3" />
                         <span>{zone}</span>
                         <button
                           onClick={() => handleRemoveCustomZone(zone)}
-                          className="ml-1 hover:text-red-400 transition-colors"
+                          className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity text-white/40 hover:text-red-400"
                         >
-                          ×
+                          <X className="w-3 h-3" />
                         </button>
                       </div>
                     ))}

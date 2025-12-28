@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { ChevronRight, ChevronLeft, Check } from "lucide-react"
+import { ChevronRight, ChevronLeft, Check, X } from "lucide-react"
 import { Header } from "@/components/shared/header"
 import { useSearchStore } from "@/lib/store"
 import { InteractiveFog } from "@/components/ui/interactive-fog"
@@ -225,13 +225,15 @@ export default function Step3Page() {
   )
   const [customLocation, setCustomLocation] = useState(session.locationCustom || '')
   
-  // 自定义区域管理（按场景隔离）
-  const [customAreasByScene, setCustomAreasByScene] = useState<Record<string, string[]>>({})
-  const [showCustomAreaInput, setShowCustomAreaInput] = useState(false)
+  // 自定义区域管理（按场景+分组隔离）
+  const [customAreasBySceneAndGroup, setCustomAreasBySceneAndGroup] = useState<Record<string, Record<string, string[]>>>({})
+  const [showCustomAreaInput, setShowCustomAreaInput] = useState<string | false>(false) // 存储当前正在输入的分组名
   const [customAreaText, setCustomAreaText] = useState('')
   
-  // 获取当前场景的自定义区域
-  const currentSceneCustomAreas = customAreasByScene[selectedScene] || []
+  // 获取指定场景和分组的自定义区域
+  const getCustomAreasForGroup = (groupName: string) => {
+    return customAreasBySceneAndGroup[selectedScene]?.[groupName] || []
+  }
 
   const currentScene = SCENE_CARDS.find(s => s.id === selectedScene)
 
@@ -239,6 +241,8 @@ export default function Step3Page() {
     setSelectedScene(sceneId)
     if (sceneId !== selectedScene) {
       setSelectedSubAreas([])
+      setShowCustomAreaInput(false)
+      setCustomAreaText('')
     }
   }
 
@@ -250,15 +254,19 @@ export default function Step3Page() {
     }
   }
 
-  // 添加自定义区域（按当前场景）
-  const addCustomArea = () => {
+  // 添加自定义区域（按当前场景和分组）
+  const addCustomArea = (groupName: string) => {
     if (customAreaText.trim() && selectedScene) {
       const newArea = customAreaText.trim()
-      const currentAreas = customAreasByScene[selectedScene] || []
+      const sceneData = customAreasBySceneAndGroup[selectedScene] || {}
+      const currentGroupAreas = sceneData[groupName] || []
       
-      setCustomAreasByScene({
-        ...customAreasByScene,
-        [selectedScene]: [...currentAreas, newArea]
+      setCustomAreasBySceneAndGroup({
+        ...customAreasBySceneAndGroup,
+        [selectedScene]: {
+          ...sceneData,
+          [groupName]: [...currentGroupAreas, newArea]
+        }
       })
       
       // 自动选中新添加的区域
@@ -269,13 +277,17 @@ export default function Step3Page() {
   }
 
   // 删除自定义区域
-  const removeCustomArea = (area: string) => {
+  const removeCustomArea = (area: string, groupName: string) => {
     if (selectedScene) {
-      const currentAreas = customAreasByScene[selectedScene] || []
+      const sceneData = customAreasBySceneAndGroup[selectedScene] || {}
+      const currentGroupAreas = sceneData[groupName] || []
       
-      setCustomAreasByScene({
-        ...customAreasByScene,
-        [selectedScene]: currentAreas.filter(a => a !== area)
+      setCustomAreasBySceneAndGroup({
+        ...customAreasBySceneAndGroup,
+        [selectedScene]: {
+          ...sceneData,
+          [groupName]: currentGroupAreas.filter(a => a !== area)
+        }
       })
       
       // 同时从选中列表中移除
@@ -425,12 +437,12 @@ export default function Step3Page() {
                               )
                             })}
                             
-                            {/* 自定义区域（仅在最后一组显示） */}
-                            {groupIndex === allGroups.length - 1 && currentSceneCustomAreas.map((area, idx) => {
+                            {/* 自定义区域（每个分组显示自己的） */}
+                            {getCustomAreasForGroup(groupName).map((area, idx) => {
                               const isAreaSelected = selectedSubAreas.includes(area)
                               return (
                                 <button
-                                  key={`custom_${idx}`}
+                                  key={`custom_${groupName}_${idx}`}
                                   onClick={() => handleSubAreaToggle(area)}
                                   className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 relative group ${
                                     isAreaSelected 
@@ -443,49 +455,47 @@ export default function Step3Page() {
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation()
-                                      removeCustomArea(area)
+                                      removeCustomArea(area, groupName)
                                     }}
                                     className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity text-white/60 hover:text-red-400"
                                   >
-                                    ×
+                                    <X className="w-3.5 h-3.5" />
                                   </button>
                                 </button>
                               )
                             })}
                             
-                            {/* + 其他按钮/输入框（仅在最后一组显示） */}
-                            {groupIndex === allGroups.length - 1 && (
-                              !showCustomAreaInput ? (
-                                <button
-                                  onClick={() => setShowCustomAreaInput(true)}
-                                  className="px-4 py-2 rounded-full text-sm font-medium border-2 border-dashed border-white/30 text-white/60 hover:border-[var(--cyber-green)]/50 hover:text-white/80 transition-all"
-                                >
-                                  <span className="text-base mr-1">+</span>其他
-                                </button>
-                              ) : (
-                                <input
-                                  type="text"
-                                  value={customAreaText}
-                                  onChange={(e) => setCustomAreaText(e.target.value)}
-                                  placeholder="输入区域..."
-                                  autoFocus
-                                  className="px-4 py-2 rounded-full text-sm bg-[var(--cyber-green)]/10 border-2 border-[var(--cyber-green)] focus:outline-none w-32 placeholder:text-white/40"
-                                  onKeyDown={(e) => {
-                                    if (e.key === 'Enter') addCustomArea()
-                                    if (e.key === 'Escape') {
-                                      setShowCustomAreaInput(false)
-                                      setCustomAreaText('')
-                                    }
-                                  }}
-                                  onBlur={() => {
-                                    if (customAreaText.trim()) {
-                                      addCustomArea()
-                                    } else {
-                                      setShowCustomAreaInput(false)
-                                    }
-                                  }}
-                                />
-                              )
+                            {/* + 其他按钮/输入框（每个分组都显示） */}
+                            {showCustomAreaInput !== groupName ? (
+                              <button
+                                onClick={() => setShowCustomAreaInput(groupName)}
+                                className="px-4 py-2 rounded-full text-sm font-medium border-2 border-dashed border-white/30 text-white/60 hover:border-[var(--cyber-green)]/50 hover:text-white/80 transition-all"
+                              >
+                                <span className="text-base mr-1">+</span>其他
+                              </button>
+                            ) : (
+                              <input
+                                type="text"
+                                value={customAreaText}
+                                onChange={(e) => setCustomAreaText(e.target.value)}
+                                placeholder="输入区域..."
+                                autoFocus
+                                className="px-4 py-2 rounded-full text-sm bg-[var(--cyber-green)]/10 border-2 border-[var(--cyber-green)] focus:outline-none w-32 placeholder:text-white/40"
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') addCustomArea(groupName)
+                                  if (e.key === 'Escape') {
+                                    setShowCustomAreaInput(false)
+                                    setCustomAreaText('')
+                                  }
+                                }}
+                                onBlur={() => {
+                                  if (customAreaText.trim()) {
+                                    addCustomArea(groupName)
+                                  } else {
+                                    setShowCustomAreaInput(false)
+                                  }
+                                }}
+                              />
                             )}
                           </div>
                         </div>
@@ -514,11 +524,11 @@ export default function Step3Page() {
                       })}
                       
                       {/* 自定义区域 */}
-                      {currentSceneCustomAreas.map((area, idx) => {
+                      {getCustomAreasForGroup('default').map((area, idx) => {
                         const isAreaSelected = selectedSubAreas.includes(area)
                         return (
                           <button
-                            key={`custom_${idx}`}
+                            key={`custom_default_${idx}`}
                             onClick={() => handleSubAreaToggle(area)}
                             className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 relative group ${
                               isAreaSelected 
@@ -531,7 +541,7 @@ export default function Step3Page() {
                             <button
                               onClick={(e) => {
                                 e.stopPropagation()
-                                removeCustomArea(area)
+                                removeCustomArea(area, 'default')
                               }}
                               className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity text-white/60 hover:text-red-400"
                             >
@@ -542,9 +552,9 @@ export default function Step3Page() {
                       })}
                       
                       {/* + 其他按钮/输入框 */}
-                      {!showCustomAreaInput ? (
+                      {showCustomAreaInput !== 'default' ? (
                         <button
-                          onClick={() => setShowCustomAreaInput(true)}
+                          onClick={() => setShowCustomAreaInput('default')}
                           className="px-4 py-2 rounded-full text-sm font-medium border-2 border-dashed border-white/30 text-white/60 hover:border-[var(--cyber-green)]/50 hover:text-white/80 transition-all"
                         >
                           <span className="text-base mr-1">+</span>其他
@@ -558,7 +568,7 @@ export default function Step3Page() {
                           autoFocus
                           className="px-4 py-2 rounded-full text-sm bg-[var(--cyber-green)]/10 border-2 border-[var(--cyber-green)] focus:outline-none w-32 placeholder:text-white/40"
                           onKeyDown={(e) => {
-                            if (e.key === 'Enter') addCustomArea()
+                            if (e.key === 'Enter') addCustomArea('default')
                             if (e.key === 'Escape') {
                               setShowCustomAreaInput(false)
                               setCustomAreaText('')
@@ -566,7 +576,7 @@ export default function Step3Page() {
                           }}
                           onBlur={() => {
                             if (customAreaText.trim()) {
-                              addCustomArea()
+                              addCustomArea('default')
                             } else {
                               setShowCustomAreaInput(false)
                             }
