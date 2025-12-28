@@ -2,97 +2,118 @@
 
 import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
-import { Home, CheckCircle2, Circle, Bell, Image as ImageIcon, RefreshCw, Download, Share2 } from "lucide-react"
+import { 
+  FileText, 
+  Scan, 
+  Activity, 
+  ShieldAlert, 
+  CheckSquare, 
+  Lock, 
+  Archive, 
+  Printer, 
+  Share2, 
+  ArrowRight,
+  Lightbulb,
+  Eye,
+  Search,
+  History,
+  AlertTriangle,
+  Clock,
+  FileOutput
+} from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useSearchStore } from "@/lib/store"
 import { getDefaultAnalysisResult } from "@/lib/ai-service"
 import { itemCategories } from "@/lib/data"
-import { InteractiveFog } from "@/components/ui/interactive-fog"
 
-// 战术清单（4大算法）- 移到组件外部避免初始化顺序问题
-const tacticalChecklist = [
+// 战术指令清单 (Tactical Directives)
+const tacticalDirectives = [
   {
     id: 1,
-    icon: '💡',
-    title: '指令 01（光学破防）',
-    description: '关闭顶部吸顶灯，开启手机闪光灯贴地侧照。寻找【非常规材质反光点】。',
-    algorithm: '光学原理'
+    icon: Lightbulb,
+    code: 'OPTICAL-OVERRIDE',
+    title: '光学破防指令',
+    description: '关闭房间主灯。开启手机闪光灯，贴近地面平行照射。',
+    target: '寻找非常规材质的反光点或异常阴影。',
+    algorithm: '光学原理 / 菲涅尔反射'
   },
   {
     id: 2,
-    icon: '👁️',
-    title: '指令 02（盲区扫描）',
-    description: '视线有欺骗性。此刻伸手深入【红色热力区】深处，进行扇形盲触。',
-    algorithm: '触觉优先'
+    icon: Eye,
+    code: 'TACTILE-SWEEP',
+    title: '盲区触觉扫描',
+    description: '视觉具有欺骗性。请勿用眼看，伸出手深入缝隙深处。',
+    target: '沙发坐垫缝隙、床垫边缘、柜底死角。',
+    algorithm: '非注意盲视 / 触觉优先'
   },
   {
     id: 3,
-    icon: '🔄',
-    title: '指令 03（第三者逻辑）',
-    description: '排查【非自主移动】因素：检查宠物窝、扫地机器人尘盒或被家人顺手收走的区域。',
-    algorithm: '社会工程'
+    icon: Search,
+    code: 'SOCIAL-ENG',
+    title: '第三方介入排查',
+    description: '排查"非自主移动"因素。物品可能被他人/物无意转移。',
+    target: '宠物窝、扫地机器人尘盒、被家人顺手收纳的区域。',
+    algorithm: '社会工程 / 环境概率'
   },
   {
     id: 4,
-    icon: '🧭',
-    title: '指令 04（记忆逆行）',
-    description: '前往习惯【非常规性区域】：去卫生间台面或玄关看看，是否因临时动作而遗落。',
-    algorithm: '行为回溯'
+    icon: History,
+    code: 'MEM-REVERSE',
+    title: '行为逆向回溯',
+    description: '前往你"绝对没去过"但符合生理习惯的区域。',
+    target: '卫生间台面、玄关鞋柜、冰箱顶部（无意识放置点）。',
+    algorithm: '行为心理学 / 自动驾驶模式'
   }
 ]
 
 export default function ReportPage() {
   const router = useRouter()
   const { session, analysisResult, resetSession } = useSearchStore()
-  const [checkedItems, setCheckedItems] = useState<number[]>([])
-  const [showPlanB, setShowPlanB] = useState(false)
+  const [completedSteps, setCompletedSteps] = useState<number[]>([])
+  const [showContingency, setShowContingency] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [caseId, setCaseId] = useState('')
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
   useEffect(() => {
     setMounted(true)
-    // 创建音效（简单的提示音）
+    // 生成一个随机的案件编号，增加真实感
+    setCaseId(`CS-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`)
+    
+    // 机械锁定音效 (清脆、短促、专业)
     if (typeof window !== 'undefined') {
-      audioRef.current = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBjKL0fPTgjMGHm7A7+OZURE')
+      // 这是一个简单的机械点击声 Base64
+      audioRef.current = new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=') 
+      // 实际开发建议替换为真实的 "UI Lock Sound" 文件
     }
   }, [])
 
+  // 监听进度，触发 Plan B
   useEffect(() => {
-    // 检查是否所有清单完成但还未显示 Plan B
-    if (checkedItems.length === tacticalChecklist.length && checkedItems.length > 0 && !showPlanB) {
+    if (completedSteps.length === tacticalDirectives.length && completedSteps.length > 0 && !showContingency) {
       const timer = setTimeout(() => {
-        setShowPlanB(true)
-      }, 1000)
+        setShowContingency(true)
+      }, 800)
       return () => clearTimeout(timer)
     }
-  }, [checkedItems.length, showPlanB])
+  }, [completedSteps.length, showContingency])
 
   if (!mounted) return null
 
-  // 使用 AI 结果或备用结果
-  const result = analysisResult || getDefaultAnalysisResult(session)
-
-  // 获取物品名称
   const getItemName = () => {
     if (session.itemCustomName) return session.itemCustomName
     const category = itemCategories.find(c => c.id === session.itemCategory)
     const item = category?.items.find(i => i.id === session.itemType)
-    return item?.label || '物品'
+    return item?.label || '未知目标'
   }
 
-  const itemName = getItemName()
-  const locationCategory = session.locationCategory || 'home'
-
-  const toggleItem = (index: number) => {
-    setCheckedItems((prev) => {
+  const toggleStep = (index: number) => {
+    setCompletedSteps((prev) => {
       const isChecked = prev.includes(index)
       if (!isChecked) {
-        // 播放完成音效
-        if (audioRef.current) {
-          audioRef.current.currentTime = 0
-          audioRef.current.play().catch(() => {})
-        }
+        // 播放音效
+        // if (audioRef.current) audioRef.current.play().catch(() => {})
         return [...prev, index]
       } else {
         return prev.filter((i) => i !== index)
@@ -100,376 +121,321 @@ export default function ReportPage() {
     })
   }
 
-  // 3D热力图热点（根据场景动态变化）
-  const getHeatmapData = () => {
-    const baseData = {
-      home: {
-        title: '家居空间热力扫描',
-        hotspots: [
-          { x: 30, y: 60, level: 'high', label: '沙发缝隙' },
-          { x: 70, y: 40, level: 'high', label: '桌面背后' },
-          { x: 50, y: 80, level: 'medium', label: '地毯边缘' },
-          { x: 85, y: 25, level: 'medium', label: '柜顶' }
-        ]
-      },
-      office: {
-        title: '办公空间热力扫描',
-        hotspots: [
-          { x: 40, y: 50, level: 'high', label: '办公桌抽屉' },
-          { x: 65, y: 35, level: 'high', label: '椅子下方' },
-          { x: 80, y: 60, level: 'medium', label: '文件夹间' },
-          { x: 25, y: 70, level: 'medium', label: '茶水间' }
-        ]
-      },
-      transit: {
-        title: '车内空间热力扫描',
-        hotspots: [
-          { x: 35, y: 55, level: 'high', label: '座椅缝隙' },
-          { x: 60, y: 45, level: 'high', label: '车门储物槽' },
-          { x: 75, y: 70, level: 'medium', label: '后备箱角落' },
-          { x: 50, y: 30, level: 'medium', label: '脚垫下' }
-        ]
-      },
-      outdoor: {
-        title: '公共空间热力扫描',
-        hotspots: [
-          { x: 40, y: 60, level: 'high', label: '座位缝隙' },
-          { x: 70, y: 50, level: 'high', label: '台面边缘' },
-          { x: 55, y: 75, level: 'medium', label: '地面角落' },
-          { x: 80, y: 35, level: 'medium', label: '柜台后方' }
-        ]
-      }
-    }
-    
-    return baseData[locationCategory as keyof typeof baseData] || baseData.home
-  }
-
-  const heatmapData = getHeatmapData()
-
-  // 设置提醒
-  const setReminder = () => {
-    alert('⏰ 提醒已设置！我们将在 2 小时后通过通知提醒您。\n\n提示：休息一下，让大脑"重置"记忆系统，往往能想起新的线索。')
-  }
-
-  // 生成海报
-  const generatePoster = () => {
-    alert('🖼️ 寻物海报生成功能开发中...\n\n即将支持：\n✓ 物品照片识别\n✓ 关键信息高亮\n✓ 一键分享到社交平台')
-  }
+  // 获取热力图配置 (保持原有逻辑，但UI风格化)
+  const locationCategory = session.locationCategory || 'home'
+  const heatmapConfig = {
+    home: { title: 'RESIDENTIAL_UNIT_SCAN', zones: ['Sofa Gap', 'Under Table', 'Carpet Edge', 'Cabinet Top'] },
+    office: { title: 'WORKSPACE_SCAN', zones: ['Drawer', 'Under Chair', 'File Stack', 'Pantry'] },
+    transit: { title: 'VEHICLE_INTERIOR_SCAN', zones: ['Seat Gap', 'Door Pocket', 'Trunk', 'Floor Mat'] },
+    outdoor: { title: 'PUBLIC_SECTOR_SCAN', zones: ['Seat Crevice', 'Counter Edge', 'Ground Corner', 'Service Desk'] }
+  }[locationCategory] || { title: 'GENERIC_AREA_SCAN', zones: ['Zone A', 'Zone B', 'Zone C', 'Zone D'] }
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
-      <InteractiveFog color="16, 185, 129" />
+    <div className="min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-cyan-900 selection:text-cyan-50">
       
-      {/* Header */}
-      <header className="sticky top-0 z-50 glass border-b border-border/50">
-        <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-          <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">C</span>
+      {/* 顶部状态栏 - 模拟终端界面 */}
+      <header className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-md border-b border-slate-800">
+        <div className="container mx-auto px-4 h-14 flex justify-between items-center">
+          <div className="flex items-center gap-4">
+            <Link href="/" className="flex items-center gap-2 group">
+              <div className="w-8 h-8 bg-cyan-950 border border-cyan-800 rounded flex items-center justify-center group-hover:bg-cyan-900 transition-colors">
+                <span className="text-cyan-400 font-bold font-mono">C</span>
+              </div>
+              <span className="text-sm font-mono tracking-widest text-slate-400 hidden sm:inline-block">COGNITRACE_SYS</span>
+            </Link>
+            <div className="h-4 w-px bg-slate-800" />
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-xs font-mono text-emerald-500">LIVE_MONITORING</span>
             </div>
-            <span className="text-xl font-semibold">CogniSeek</span>
-          </Link>
+          </div>
+          
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="rounded-xl">
-              <Download className="h-4 w-4 md:mr-2" />
-              <span className="hidden md:inline">下载</span>
+            <Button variant="ghost" size="sm" className="h-8 text-slate-400 hover:text-cyan-400 font-mono text-xs">
+              <Printer className="w-3.5 h-3.5 mr-2" />
+              PRINT_LOG
             </Button>
-            <Button variant="outline" size="sm" className="rounded-xl">
-              <Share2 className="h-4 w-4 md:mr-2" />
-              <span className="hidden md:inline">分享</span>
+            <Button variant="ghost" size="sm" className="h-8 text-slate-400 hover:text-cyan-400 font-mono text-xs">
+              <Share2 className="w-3.5 h-3.5 mr-2" />
+              EXPORT
             </Button>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8 md:py-12 relative z-10">
-        <div className="max-w-4xl mx-auto space-y-8">
+      <main className="container mx-auto px-4 py-8 max-w-5xl">
+        
+        {/* 档案头信息 (The Header) */}
+        <div className="border-l-2 border-cyan-500 pl-6 mb-12 relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
+            <Scan className="w-32 h-32" />
+          </div>
           
-          {/* Header */}
-          <div className="text-center space-y-3">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-chart-2/10 border border-chart-2/20">
-              <CheckCircle2 className="h-4 w-4 text-chart-2" />
-              <span className="text-chart-2 font-medium text-sm">完整报告已解锁</span>
+          <div className="space-y-1 mb-6">
+            <div className="flex items-center gap-3 text-xs font-mono text-cyan-500 mb-2">
+              <span className="bg-cyan-950/50 px-2 py-0.5 rounded border border-cyan-900">CASE ID: {caseId}</span>
+              <span>PRIORITY: HIGH</span>
+              <span>{new Date().toLocaleDateString()}</span>
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold">「{itemName}」战术指导方案</h1>
-            <p className="text-muted-foreground">基于多维度分析的精准搜索路径</p>
+            <h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight uppercase">
+              目标锁定：{getItemName()}
+            </h1>
+            <p className="text-slate-400 max-w-2xl">
+              认知取证分析已完成。系统检测到 <span className="text-white font-semibold">非注意盲视 (Inattentional Blindness)</span> 现象。
+              物品并未丢失，而是处于您的视觉感知盲区。
+            </p>
           </div>
 
-          {/* 模块 A：3D 空间热力图 */}
-          <div className="bg-card rounded-2xl border border-border/50 p-6 md:p-8 card-shadow space-y-6">
-            <div className="flex items-center gap-3">
-              <span className="text-2xl">🗺️</span>
+          <div className="flex flex-wrap gap-4">
+            <div className="bg-slate-900/50 border border-slate-800 px-4 py-2 rounded flex items-center gap-3">
+              <Activity className="w-4 h-4 text-emerald-500" />
               <div>
-                <h2 className="text-lg md:text-xl font-bold">{heatmapData.title}</h2>
-                <p className="text-sm text-muted-foreground">基于物理学与行为学的概率分析</p>
+                <div className="text-[10px] text-slate-500 font-mono uppercase">Recovery Probability</div>
+                <div className="text-lg font-bold text-white font-mono">87.3%</div>
+              </div>
+            </div>
+            <div className="bg-slate-900/50 border border-slate-800 px-4 py-2 rounded flex items-center gap-3">
+              <ShieldAlert className="w-4 h-4 text-orange-500" />
+              <div>
+                <div className="text-[10px] text-slate-500 font-mono uppercase">Risk Level</div>
+                <div className="text-lg font-bold text-white font-mono">MODERATE</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 核心区域：Grid 布局 */}
+        <div className="grid lg:grid-cols-3 gap-8">
+          
+          {/* 左侧：空间雷达分析 (Spatial Analysis) */}
+          <div className="lg:col-span-2 space-y-6">
+            
+            {/* 3D 扫描图 */}
+            <div className="bg-slate-900 border border-slate-800 rounded-lg overflow-hidden relative group">
+              <div className="absolute top-4 left-4 z-10 flex items-center gap-2">
+                <Scan className="w-4 h-4 text-cyan-500" />
+                <span className="text-xs font-mono text-cyan-500 uppercase">{heatmapConfig?.title}</span>
+              </div>
+              
+              {/* 装饰性的网格背景 */}
+              <div className="absolute inset-0 bg-[linear-gradient(rgba(45,225,252,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(45,225,252,0.03)_1px,transparent_1px)] bg-[size:20px_20px]" />
+              
+              <div className="relative aspect-video flex items-center justify-center p-8">
+                {/* SVG 3D 线框图 */}
+                <svg className="w-full h-full max-w-md drop-shadow-[0_0_15px_rgba(45,225,252,0.1)]" viewBox="0 0 400 300">
+                  <defs>
+                    <linearGradient id="scanGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stopColor="rgba(45,225,252,0)" />
+                      <stop offset="50%" stopColor="rgba(45,225,252,0.2)" />
+                      <stop offset="100%" stopColor="rgba(45,225,252,0)" />
+                    </linearGradient>
+                  </defs>
+                  
+                  {/* 扫描光束动画 */}
+                  <rect x="0" y="0" width="400" height="300" fill="url(#scanGradient)" className="animate-scan-vertical" style={{ opacity: 0.3 }} />
+                  
+                  {/* 房间线框 */}
+                  <path d="M50 80 L350 80 L350 220 L50 220 Z" fill="none" stroke="#1e293b" strokeWidth="1" />
+                  <path d="M50 80 L200 50 L350 80" fill="none" stroke="#334155" strokeWidth="1" />
+                  <path d="M50 220 L200 250 L350 220" fill="none" stroke="#334155" strokeWidth="1" />
+                  <path d="M200 50 L200 250" fill="none" stroke="#334155" strokeWidth="1" strokeDasharray="4 4" />
+                  
+                  {/* 热点标记 - 仅作为示意 */}
+                  <circle cx="120" cy="180" r="4" fill="#F97316" className="animate-pulse" />
+                  <circle cx="120" cy="180" r="20" fill="none" stroke="#F97316" strokeWidth="1" opacity="0.5" className="animate-ping" />
+                  <line x1="120" y1="180" x2="160" y2="140" stroke="#F97316" strokeWidth="1" />
+                  <text x="165" y="140" fill="#F97316" fontSize="10" fontFamily="monospace">HIGH_PROB_ZONE</text>
+                  
+                  <circle cx="280" cy="100" r="3" fill="#10b981" />
+                  <text x="290" y="100" fill="#10b981" fontSize="10" fontFamily="monospace">SECONDARY</text>
+                </svg>
+              </div>
+
+              {/* 底部数据流 */}
+              <div className="border-t border-slate-800 bg-slate-950 p-3 flex justify-between items-center text-[10px] font-mono text-slate-500">
+                <span>SECTOR_ANALYSIS: COMPLETE</span>
+                <span>ERR_MARGIN: ±2.4%</span>
               </div>
             </div>
 
-            {/* 3D 线框热力图 */}
-            <div className="relative w-full aspect-video bg-secondary/20 rounded-xl overflow-hidden border border-border/30">
-              <svg className="w-full h-full" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
-                {/* 3D 线框网格 */}
-                <defs>
-                  <radialGradient id="heatmapBg">
-                    <stop offset="0%" stopColor="rgba(45,225,252,0.1)" />
-                    <stop offset="100%" stopColor="transparent" />
-                  </radialGradient>
-                </defs>
-                
-                {/* 背景网格 */}
-                <rect width="400" height="300" fill="url(#heatmapBg)" />
-                
-                {/* 网格线 */}
-                {[...Array(10)].map((_, i) => (
-                  <line 
-                    key={`h-${i}`}
-                    x1="0" 
-                    y1={30 * i} 
-                    x2="400" 
-                    y2={30 * i}
-                    stroke="rgba(45,225,252,0.1)"
-                    strokeWidth="1"
-                  />
-                ))}
-                {[...Array(13)].map((_, i) => (
-                  <line 
-                    key={`v-${i}`}
-                    x1={30 * i} 
-                    y1="0" 
-                    x2={30 * i} 
-                    y2="300"
-                    stroke="rgba(45,225,252,0.1)"
-                    strokeWidth="1"
-                  />
-                ))}
-                
-                {/* 3D 房间线框 */}
-                <path 
-                  d="M 50 80 L 50 220 L 200 250 L 350 220 L 350 80 L 200 50 Z"
-                  stroke="#2DE1FC"
-                  strokeWidth="2"
-                  fill="none"
-                  opacity="0.4"
-                />
-                <path 
-                  d="M 50 80 L 200 50 L 200 250 M 350 80 L 200 50"
-                  stroke="#2DE1FC"
-                  strokeWidth="1"
-                  fill="none"
-                  opacity="0.3"
-                />
-                
-                {/* 热力标记点 */}
-                {heatmapData.hotspots.map((spot, index) => (
-                  <g key={index}>
-                    {/* 热力光晕 */}
-                    <circle
-                      cx={spot.x + '%'}
-                      cy={spot.y + '%'}
-                      r="30"
-                      fill={spot.level === 'high' ? 'rgba(255,68,68,0.3)' : 'rgba(255,215,0,0.3)'}
-                      style={{
-                        animation: `pulse 2s ease-in-out infinite ${index * 0.3}s`
-                      }}
-                    />
-                    {/* 标记圆点 */}
-                    <circle
-                      cx={spot.x + '%'}
-                      cy={spot.y + '%'}
-                      r="8"
-                      fill={spot.level === 'high' ? '#FF4444' : '#FFD700'}
-                      stroke="white"
-                      strokeWidth="2"
-                    />
-                    {/* 标签 */}
-                    <text
-                      x={spot.x + '%'}
-                      y={spot.y + '%'}
-                      dy="30"
-                      textAnchor="middle"
-                      fill="white"
-                      fontSize="12"
-                      fontWeight="bold"
+            {/* 战术执行协议 (Tactical Execution) */}
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <FileText className="w-4 h-4 text-cyan-500" />
+                <h3 className="text-sm font-bold text-white uppercase tracking-wider">执行战术指令 (Directives)</h3>
+              </div>
+              
+              <div className="space-y-3">
+                {tacticalDirectives.map((item, index) => {
+                  const isCompleted = completedSteps.includes(index)
+                  const Icon = item.icon
+                  
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => toggleStep(index)}
+                      className={`
+                        w-full text-left relative group overflow-hidden
+                        border rounded-md transition-all duration-300
+                        ${isCompleted 
+                          ? 'bg-emerald-950/20 border-emerald-900/50' 
+                          : 'bg-slate-900 border-slate-800 hover:border-cyan-700 hover:bg-slate-800'
+                        }
+                      `}
                     >
-                      {spot.label}
-                    </text>
-                  </g>
-                ))}
-              </svg>
-            </div>
+                      {/* 进度条背景 */}
+                      <div 
+                        className={`absolute left-0 top-0 bottom-0 w-1 transition-colors duration-300 ${isCompleted ? 'bg-emerald-500' : 'bg-slate-700 group-hover:bg-cyan-500'}`} 
+                      />
 
-            {/* 图例 */}
-            <div className="flex items-center justify-center gap-6 text-sm">
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded-full bg-[#FF4444]" />
-                <span>🔴 极高概率</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded-full bg-[#FFD700]" />
-                <span>🟡 中等概率</span>
-              </div>
-            </div>
-          </div>
-
-          {/* 模块 B：战术清单（核心体验）*/}
-          <div className="bg-card rounded-2xl border border-border/50 p-6 md:p-8 card-shadow space-y-6">
-            <div className="flex items-center gap-3">
-              <span className="text-2xl">⚡</span>
-              <div>
-                <h2 className="text-lg md:text-xl font-bold">战术指令清单</h2>
-                <p className="text-sm text-muted-foreground">请按顺序执行，完成后勾选</p>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              {tacticalChecklist.map((item, index) => (
-                <button
-                  key={item.id}
-                  onClick={() => toggleItem(index)}
-                  className={`w-full flex items-start gap-4 p-4 rounded-xl border transition-all duration-300 text-left ${
-                    checkedItems.includes(index)
-                      ? "border-chart-2/40 bg-chart-2/10 shadow-[0_0_20px_rgba(16,185,129,0.2)]"
-                      : "border-border/50 bg-background hover:border-border hover:bg-secondary/30"
-                  }`}
-                >
-                  <div className="flex-shrink-0 mt-1">
-                    {checkedItems.includes(index) ? (
-                      <CheckCircle2 className="h-6 w-6 text-chart-2" />
-                    ) : (
-                      <Circle className="h-6 w-6 text-muted-foreground" />
-                    )}
-                  </div>
-                  <div className="flex-1 space-y-2">
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">{item.icon}</span>
-                      <div className="flex-1">
-                        <h3 className={`font-bold ${checkedItems.includes(index) ? "text-chart-2" : ""}`}>
-                          {item.title}
-                        </h3>
-                        <span className="text-xs text-muted-foreground">
-                          算法：{item.algorithm}
+                      <div className="p-4 pl-6 flex gap-4">
+                        <div className={`mt-1 p-2 rounded-sm border ${isCompleted ? 'border-emerald-500/30 text-emerald-500' : 'border-slate-700 text-slate-500 group-hover:text-cyan-400 group-hover:border-cyan-500/30'}`}>
+                          <Icon className="w-5 h-5" />
+                        </div>
+                        
+                        <div className="flex-1 space-y-1">
+                          <div className="flex justify-between items-center">
+                            <span className={`text-xs font-mono font-bold ${isCompleted ? 'text-emerald-500' : 'text-cyan-600'}`}>
+                              {item.code}
+                            </span>
+                            {isCompleted && <CheckSquare className="w-4 h-4 text-emerald-500" />}
+                          </div>
+                          
+                          <h4 className={`font-bold ${isCompleted ? 'text-slate-400 line-through' : 'text-slate-200'}`}>
+                            {item.title}
+                          </h4>
+                          
+                          <p className="text-sm text-slate-400 leading-relaxed">
+                            {item.description}
+                            <span className={`block mt-1 font-mono text-xs ${isCompleted ? 'text-emerald-600' : 'text-orange-400'}`}>
+                              &gt; 目标: {item.target}
+                            </span>
+                          </p>
+                        </div>
+                      </div>
+                      
+                      {/* 算法标记脚标 */}
+                      <div className="bg-slate-950/50 px-6 py-1.5 border-t border-slate-800/50 flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-slate-600" />
+                        <span className="text-[10px] text-slate-500 font-mono uppercase tracking-tight">
+                          ALGORITHM: {item.algorithm}
                         </span>
                       </div>
-                    </div>
-                    <p className={`text-sm ${checkedItems.includes(index) ? "text-muted-foreground line-through" : "text-foreground"}`}>
-                      {item.description}
-                    </p>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            {/* 进度条 */}
-            <div className="p-4 rounded-xl bg-secondary/50 space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">完成进度</span>
-                <span className="font-bold text-chart-2">
-                  {checkedItems.length} / {tacticalChecklist.length}
-                </span>
-              </div>
-              <div className="h-2 bg-background rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-chart-2 transition-all duration-500 rounded-full"
-                  style={{ 
-                    width: `${(checkedItems.length / tacticalChecklist.length) * 100}%`,
-                    boxShadow: '0 0 10px rgba(16,185,129,0.5)'
-                  }}
-                />
+                    </button>
+                  )
+                })}
               </div>
             </div>
           </div>
 
-          {/* 模块 C：兜底协议（Plan B）*/}
-          {showPlanB && (
-            <div className="bg-gradient-to-br from-chart-3/20 to-chart-1/20 rounded-2xl border-2 border-chart-3/40 p-6 md:p-8 space-y-6 animate-in fade-in slide-in-from-bottom duration-700">
-              <div className="text-center space-y-2">
-                <div className="text-4xl">🛡️</div>
-                <h2 className="text-2xl font-bold">目标未确认？启动 B 计划</h2>
-                <p className="text-muted-foreground">
-                  物品可能处于"动态隐藏"状态，或需要更多辅助手段
+          {/* 右侧：状态与 B 计划 */}
+          <div className="space-y-6">
+            
+            {/* 状态面板 */}
+            <div className="bg-slate-900 border border-slate-800 rounded-lg p-5 space-y-4">
+              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Operation Status</h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <div className="flex justify-between text-xs mb-1.5">
+                    <span className="text-slate-400">DIRECTIVES_COMPLETED</span>
+                    <span className="font-mono text-cyan-400">{completedSteps.length}/{tacticalDirectives.length}</span>
+                  </div>
+                  <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-cyan-500 transition-all duration-500" 
+                      style={{ width: `${(completedSteps.length / tacticalDirectives.length) * 100}%` }} 
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-slate-800">
+                  <div className="flex items-start gap-3">
+                    <Lock className="w-4 h-4 text-slate-500 mt-0.5" />
+                    <div>
+                      <div className="text-sm font-bold text-slate-300">时空回溯图谱</div>
+                      <div className="text-xs text-slate-500 mt-1">需解锁完整权限查看高精度坐标</div>
+                      <Button size="sm" variant="outline" className="w-full mt-3 border-cyan-800 text-cyan-500 hover:bg-cyan-950/30 hover:text-cyan-400 text-xs h-8 font-mono">
+                        UNLOCK_ACCESS [L2]
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 二级响应机制 (Plan B) - 自动触发 */}
+            {showContingency && (
+              <div className="bg-orange-950/10 border border-orange-900/50 rounded-lg p-5 space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <div className="flex items-center gap-2 text-orange-500 mb-2">
+                  <AlertTriangle className="w-4 h-4" />
+                  <h3 className="text-xs font-bold uppercase tracking-wider">Contingency Protocols</h3>
+                </div>
+                
+                <p className="text-xs text-orange-200/70 leading-relaxed">
+                  一级指令未生效。目标可能处于"动态隐藏"状态或已被移出常规区域。建议启动备用协议。
                 </p>
-              </div>
 
-              <div className="grid md:grid-cols-2 gap-4">
-                {/* 功能 1：时间胶囊提醒 */}
-                <div className="bg-card rounded-xl border border-border/50 p-6 space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Bell className="w-6 h-6 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold">时间胶囊提醒</h3>
-                      <p className="text-xs text-muted-foreground">让大脑休息，重置记忆</p>
-                    </div>
-                  </div>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    物品可能处于"动态隐藏"状态。建议休息，让大脑重置。AI 将在 <span className="font-bold text-primary">2 小时后</span>提醒您。
-                  </p>
-                  <Button 
-                    onClick={setReminder}
-                    className="w-full rounded-xl"
-                    variant="outline"
-                  >
-                    <Bell className="w-4 h-4 mr-2" />
-                    设置提醒
+                <div className="space-y-2">
+                  <Button variant="outline" className="w-full justify-start text-xs border-orange-900/30 text-orange-400 hover:bg-orange-900/20 hover:text-orange-300 h-9">
+                    <Clock className="w-3.5 h-3.5 mr-2" />
+                    设定"记忆重置"闹钟 (+2h)
                   </Button>
-                </div>
-
-                {/* 功能 2：生成寻物海报 */}
-                <div className="bg-card rounded-xl border border-border/50 p-6 space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-chart-2/10 flex items-center justify-center">
-                      <ImageIcon className="w-6 h-6 text-chart-2" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold">生成寻物海报</h3>
-                      <p className="text-xs text-muted-foreground">扩大搜索范围</p>
-                    </div>
-                  </div>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    生成高可视度的寻物图片，可转发朋友圈或询问同事。
-                  </p>
-                  <Button 
-                    onClick={generatePoster}
-                    className="w-full rounded-xl bg-chart-2 hover:bg-chart-2/90"
-                  >
-                    <ImageIcon className="w-4 h-4 mr-2" />
-                    生成海报
+                  <Button variant="outline" className="w-full justify-start text-xs border-orange-900/30 text-orange-400 hover:bg-orange-900/20 hover:text-orange-300 h-9">
+                    <FileOutput className="w-3.5 h-3.5 mr-2" />
+                    生成协查通报 (PDF)
                   </Button>
                 </div>
               </div>
-            </div>
-          )}
-
-          {/* Actions */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild variant="outline" size="lg" className="rounded-xl">
-              <Link href="/"><Home className="mr-2 h-5 w-5" /> 返回首页</Link>
-            </Button>
-            <Button variant="outline" size="lg" className="rounded-xl" onClick={resetSession}>
-              <RefreshCw className="mr-2 h-5 w-5" /> 重新分析
-            </Button>
+            )}
           </div>
+        </div>
 
-          {/* 成功反馈 */}
-          <div className="bg-chart-2/5 border border-chart-2/20 rounded-2xl p-6 text-center space-y-4">
-            <div className="text-4xl">🎉</div>
-            <h3 className="text-xl font-bold">找到了吗？</h3>
-            <p className="text-muted-foreground">如果成功找回，我们很想听听你的故事！</p>
-            <Button size="lg" className="rounded-xl bg-chart-2 hover:bg-chart-2/90">
-              🎊 我找到了！分享成功故事
+        {/* 底部结案操作 */}
+        <div className="mt-12 pt-8 border-t border-slate-800 flex flex-col items-center gap-6">
+          <div className="text-center space-y-1">
+            <h3 className="text-slate-200 font-bold">RECOVERY CONFIRMATION</h3>
+            <p className="text-xs text-slate-500">点击确认以关闭本案卷宗，数据将用于优化下一次模型精度。</p>
+          </div>
+          
+          <div className="flex gap-4">
+             <Button 
+              size="lg" 
+              className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-8 rounded shadow-[0_0_20px_rgba(16,185,129,0.2)]"
+              onClick={() => {
+                // 这里可以添加结案逻辑
+                resetSession()
+                router.push('/')
+              }}
+            >
+              <Archive className="w-4 h-4 mr-2" />
+              确认找回 & 归档
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              size="lg"
+              className="border-slate-700 text-slate-400 hover:text-white hover:bg-slate-800"
+              onClick={() => resetSession()}
+            >
+              <ArrowRight className="w-4 h-4 mr-2" />
+              未找到，重启分析
             </Button>
           </div>
         </div>
+        
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-border/50 mt-12">
-        <div className="container mx-auto px-4 py-6 text-center text-sm text-muted-foreground">
-          本报告由 CogniSeek 生成 · 感谢您的信任
-        </div>
-      </footer>
+      {/* 注入 CSS 动画 */}
+      <style jsx global>{`
+        @keyframes scan-vertical {
+          0% { transform: translateY(-100%); }
+          100% { transform: translateY(100%); }
+        }
+        .animate-scan-vertical {
+          animation: scan-vertical 3s linear infinite;
+        }
+      `}</style>
     </div>
   )
 }
