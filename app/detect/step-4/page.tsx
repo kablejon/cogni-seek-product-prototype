@@ -3,41 +3,62 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { ChevronRight, ChevronLeft, Brain, Check, Radio, Plus, Wine, Zap, Moon, Smile, Angry, HelpCircle, AlertTriangle } from "lucide-react"
+import { ChevronRight, ChevronLeft, Brain, Check, Radio, Plus, AlertTriangle } from "lucide-react"
 import { Header } from "@/components/shared/header"
 import { useSearchStore } from "@/lib/store"
 import { InteractiveFog } from "@/components/ui/interactive-fog"
+import { 
+  AngryIcon, 
+  AnxiousIcon, 
+  SleepyIcon, 
+  TipsyIcon, 
+  ExcitedIcon, 
+  CalmIcon, 
+  ConfusedIcon,
+  CustomMoodIcon 
+} from "@/components/ui/neon-mood-icons"
+import {
+  WalkingIcon,
+  SittingIcon,
+  CarryingIcon,
+  PhoneCallIcon,
+  CleaningIcon,
+  ChangingIcon,
+  DrivingIcon,
+  EatingIcon,
+  PhotoIcon
+} from "@/components/ui/neon-activity-icons"
 
-// 心理状态选项（8个+自定义）
+// 心理状态选项（8个+自定义）- 霓虹光效配色
 const MOOD_OPTIONS = [
-  { id: 'anxious', label: '焦虑/急忙', desc: '隧道视野', icon: '⚡', color: 'rgb(239, 68, 68)' },
-  { id: 'drowsy', label: '困倦', desc: '警觉度低', icon: '😴', color: 'rgb(148, 163, 184)' },
-  { id: 'excited', label: '兴奋/激动', desc: '多巴胺峰值', icon: '🎉', color: 'rgb(251, 191, 36)' },
-  { id: 'calm', label: '平静/正常', desc: '正常基线', icon: '😌', color: 'rgb(34, 197, 94)' },
-  { id: 'tipsy', label: '微醺/醉酒', desc: '判断力下降', icon: '🍷', color: 'rgb(168, 85, 247)' },
-  { id: 'angry', label: '愤怒/生气', desc: '动作幅度大', icon: '😤', color: 'rgb(249, 115, 22)' },
-  { id: 'confused', label: '困惑/迷茫', desc: '认知负荷高', icon: '🤔', color: 'rgb(59, 130, 246)' },
+  { id: 'angry', label: '愤怒/生气', desc: '动作幅度大', IconComponent: AngryIcon, color: '#FF3B30', glowColor: 'rgba(255, 59, 48, 0.3)' },
+  { id: 'anxious', label: '焦虑/急忙', desc: '隧道视野', IconComponent: AnxiousIcon, color: '#FF9500', glowColor: 'rgba(255, 149, 0, 0.3)' },
+  { id: 'drowsy', label: '困倦/疲惫', desc: '警觉度低', IconComponent: SleepyIcon, color: '#0A84FF', glowColor: 'rgba(10, 132, 255, 0.3)' },
+  { id: 'tipsy', label: '微醺/醉酒', desc: '判断力下降', IconComponent: TipsyIcon, color: '#BF5AF2', glowColor: 'rgba(191, 90, 242, 0.3)' },
+  { id: 'excited', label: '兴奋/激动', desc: '多巴胺峰值', IconComponent: ExcitedIcon, color: '#FF2D55', glowColor: 'rgba(255, 45, 85, 0.3)' },
+  { id: 'calm', label: '平静/正常', desc: '正常基线', IconComponent: CalmIcon, color: '#64D2FF', glowColor: 'rgba(100, 210, 255, 0.3)' },
+  { id: 'confused', label: '困惑/迷茫', desc: '认知负荷高', IconComponent: ConfusedIcon, color: '#EBEBF5', glowColor: 'rgba(235, 235, 245, 0.3)' },
 ]
 
-// 身体动作选项（多选）
+// 身体动作选项（多选）- 使用霓虹图标
 const ACTIVITY_OPTIONS = [
-  { id: 'walking', label: '行走中', icon: '🚶' },
-  { id: 'sitting', label: '坐着休息', icon: '🪑' },
-  { id: 'carrying', label: '手持重物/拿快递', icon: '📦' },
-  { id: 'phone_call', label: '打电话', icon: '📱' },
-  { id: 'cleaning', label: '整理卫生', icon: '🧹' },
-  { id: 'changing', label: '试穿/换装', icon: '👗' },
-  { id: 'driving', label: '驾驶/骑行', icon: '🚗' },
-  { id: 'eating', label: '进餐', icon: '🍽' },
-  { id: 'photo', label: '拍照', icon: '📸' },
+  { id: 'walking', label: '行走中', IconComponent: WalkingIcon },
+  { id: 'sitting', label: '坐着休息', IconComponent: SittingIcon },
+  { id: 'carrying', label: '手持重物/拿快递', IconComponent: CarryingIcon },
+  { id: 'phone_call', label: '打电话', IconComponent: PhoneCallIcon },
+  { id: 'cleaning', label: '整理卫生', IconComponent: CleaningIcon },
+  { id: 'changing', label: '试穿/换装', IconComponent: ChangingIcon },
+  { id: 'driving', label: '驾驶/骑行', IconComponent: DrivingIcon },
+  { id: 'eating', label: '进餐', IconComponent: EatingIcon },
+  { id: 'photo', label: '拍照', IconComponent: PhotoIcon },
 ]
 
-// 干扰源选项
+// 干扰源选项 - 移除 Emoji
 const DISTRACTION_OPTIONS = [
-  { id: 'notification', label: '突发消息/电话', icon: '🔔' },
-  { id: 'talking', label: '与人激烈交谈', icon: '🗣' },
-  { id: 'caring', label: '照看孩子/宠物', icon: '👶' },
-  { id: 'daydream', label: '沉思/走神', icon: '🧠' },
+  { id: 'notification', label: '突发消息/电话' },
+  { id: 'talking', label: '与人激烈交谈' },
+  { id: 'caring', label: '照看孩子/宠物' },
+  { id: 'daydream', label: '沉思/走神' },
 ]
 
 export default function Step4Page() {
@@ -153,6 +174,7 @@ export default function Step4Page() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {MOOD_OPTIONS.map((mood) => {
                 const isSelected = selectedMood === mood.id
+                const IconComponent = mood.IconComponent
                 
                 return (
                   <button
@@ -162,23 +184,30 @@ export default function Step4Page() {
                       setShowMoodCustom(false)
                     }}
                     className={`
-                      relative p-4 rounded-xl border-2 transition-all duration-300
+                      relative p-3 rounded-xl border-2 transition-all duration-500
                       ${isSelected 
-                        ? 'border-[var(--holo-blue)] bg-[var(--holo-blue)]/10 shadow-[0_0_25px_rgba(45,225,252,0.3)]' 
-                        : 'border-white/10 bg-white/5 hover:border-white/30 hover:bg-white/10'
+                        ? 'border-white/5 shadow-lg' 
+                        : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/8'
                       }
                     `}
-                    style={isSelected ? { boxShadow: `0 0 30px ${mood.color}40` } : {}}
+                    style={isSelected ? { 
+                      backgroundColor: `${mood.color}15`,
+                      borderColor: mood.color,
+                      boxShadow: `0 0 20px ${mood.glowColor}, 0 0 40px ${mood.glowColor}` 
+                    } : {}}
                   >
                     {isSelected && (
-                      <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-[var(--cyber-green)] flex items-center justify-center shadow-lg">
+                      <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-[var(--cyber-green)] flex items-center justify-center shadow-lg animate-scale-in">
                         <Check className="w-3.5 h-3.5 text-black" />
                       </div>
                     )}
 
-                    <div className="text-center space-y-1">
-                      <div className="text-2xl mb-2">{mood.icon}</div>
-                      <div className="font-bold text-sm">{mood.label}</div>
+                    <div className="text-center space-y-2">
+                      {/* 霓虹图标 */}
+                      <div className="w-16 h-16 mx-auto">
+                        <IconComponent isSelected={isSelected} color={mood.color} className="w-full h-full" />
+                      </div>
+                      <div className="font-bold text-sm" style={isSelected ? { color: mood.color } : {}}>{mood.label}</div>
                       <div className="text-xs text-white/50">{mood.desc}</div>
                     </div>
                   </button>
@@ -186,35 +215,16 @@ export default function Step4Page() {
               })}
 
               {/* 自定义心理状态 */}
-              {!showMoodCustom ? (
-                <button
-                  onClick={() => {
-                    setShowMoodCustom(true)
-                    setSelectedMood('custom')
-                  }}
-                  className={`
-                    relative p-4 rounded-xl border-2 border-dashed transition-all duration-300
-                    ${selectedMood === 'custom' && moodCustomText
-                      ? 'border-[var(--holo-blue)] bg-[var(--holo-blue)]/10' 
-                      : 'border-white/20 bg-white/5 hover:border-white/40'
-                    }
-                  `}
-                >
-                  <div className="text-center space-y-1">
-                    <div className="text-2xl mb-2">➕</div>
-                    <div className="font-bold text-sm">其他状态</div>
-                    <div className="text-xs text-white/50">自定义输入</div>
-                  </div>
-                </button>
-              ) : (
-                <div className="relative p-3 rounded-xl border-2 border-[var(--holo-blue)] bg-[var(--holo-blue)]/10 shadow-[0_0_20px_rgba(45,225,252,0.3)]">
+              {showMoodCustom ? (
+                // 输入模式
+                <div className="relative p-3 rounded-xl border-2 border-[var(--holo-blue)] bg-[var(--holo-blue)]/10 shadow-[0_0_20px_rgba(45,225,252,0.3)] animate-fade-in-up flex flex-col items-center justify-center min-h-[120px]">
                   <input
                     type="text"
                     value={moodCustomText}
                     onChange={(e) => setMoodCustomText(e.target.value)}
                     placeholder="输入你的状态..."
                     autoFocus
-                    className="w-full bg-transparent border-none text-sm text-center focus:outline-none placeholder:text-white/40"
+                    className="w-full bg-transparent border-none text-base text-center focus:outline-none placeholder:text-white/40"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && moodCustomText.trim()) {
                         setShowMoodCustom(false)
@@ -226,7 +236,9 @@ export default function Step4Page() {
                       }
                     }}
                     onBlur={() => {
-                      if (!moodCustomText.trim()) {
+                      if (moodCustomText.trim()) {
+                        setShowMoodCustom(false)
+                      } else {
                         setShowMoodCustom(false)
                         setSelectedMood('')
                       }
@@ -234,6 +246,59 @@ export default function Step4Page() {
                   />
                   <div className="text-xs text-white/50 text-center mt-2">回车确认</div>
                 </div>
+              ) : moodCustomText ? (
+                // 展示模式 - 显示用户输入的文字
+                <button
+                  onClick={() => {
+                    setShowMoodCustom(true)
+                  }}
+                  className={`
+                    relative p-3 rounded-xl border-2 transition-all duration-500
+                    flex flex-col items-center justify-center min-h-[120px]
+                    ${selectedMood === 'custom'
+                      ? 'border-[var(--holo-blue)] bg-[var(--holo-blue)]/15 shadow-[0_0_20px_rgba(45,225,252,0.3),0_0_40px_rgba(45,225,252,0.3)]' 
+                      : 'border-white/20 bg-white/5 hover:border-[var(--holo-blue)]/50 hover:bg-white/8'
+                    }
+                  `}
+                >
+                  {selectedMood === 'custom' && (
+                    <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-[var(--cyber-green)] flex items-center justify-center shadow-lg animate-scale-in">
+                      <Check className="w-3.5 h-3.5 text-black" />
+                    </div>
+                  )}
+                  <div className="px-3 text-center">
+                    <div 
+                      className="font-semibold text-base leading-snug break-words"
+                      style={{ color: selectedMood === 'custom' ? 'var(--holo-blue)' : '#fff' }}
+                    >
+                      {moodCustomText}
+                    </div>
+                    <div className="text-xs text-white/50 mt-2">自定义状态</div>
+                  </div>
+                </button>
+              ) : (
+                // 初始模式 - 显示默认图标
+                <button
+                  onClick={() => {
+                    setShowMoodCustom(true)
+                    setSelectedMood('custom')
+                  }}
+                  className={`
+                    relative p-3 rounded-xl border-2 border-dashed transition-all duration-300
+                    ${selectedMood === 'custom'
+                      ? 'border-[var(--holo-blue)] bg-[var(--holo-blue)]/10 shadow-[0_0_20px_rgba(45,225,252,0.3)]' 
+                      : 'border-white/20 bg-white/5 hover:border-white/40'
+                    }
+                  `}
+                >
+                  <div className="text-center space-y-2">
+                    <div className="w-16 h-16 mx-auto">
+                      <CustomMoodIcon isSelected={selectedMood === 'custom'} className="w-full h-full" />
+                    </div>
+                    <div className="font-bold text-sm">其他状态</div>
+                    <div className="text-xs text-white/50">自定义输入</div>
+                  </div>
+                </button>
               )}
             </div>
           </div>
@@ -253,6 +318,7 @@ export default function Step4Page() {
             <div className="flex flex-wrap gap-2">
               {ACTIVITY_OPTIONS.map((activity) => {
                 const isSelected = selectedActivities.includes(activity.id)
+                const IconComponent = activity.IconComponent
                 return (
                   <button
                     key={activity.id}
@@ -267,7 +333,7 @@ export default function Step4Page() {
                     `}
                   >
                     {isSelected && <Check className="w-3.5 h-3.5" />}
-                    <span>{activity.icon}</span>
+                    <IconComponent isSelected={isSelected} className="w-5 h-5" />
                     <span>{activity.label}</span>
                   </button>
                 )
@@ -281,10 +347,9 @@ export default function Step4Page() {
                     setCustomActivities(customActivities.filter((_, i) => i !== idx))
                     setSelectedActivities(selectedActivities.filter(a => a !== `custom_${custom}`))
                   }}
-                  className="px-4 py-2.5 rounded-full text-sm font-medium bg-[var(--cyber-green)]/20 border border-[var(--cyber-green)] text-white shadow-[0_0_15px_rgba(0,255,157,0.3)] flex items-center gap-2"
+                  className="px-4 py-2.5 rounded-full text-sm font-medium bg-[var(--holo-blue)]/20 border border-[var(--holo-blue)] text-white shadow-[0_0_15px_rgba(45,225,252,0.3)] flex items-center gap-2"
                 >
                   <Check className="w-3.5 h-3.5" />
-                  <span>✨</span>
                   <span>{custom}</span>
                 </button>
               ))}
@@ -330,26 +395,28 @@ export default function Step4Page() {
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <div className="relative">
-                <AlertTriangle className="w-5 h-5" style={{ color: 'rgb(250, 204, 21)' }} />
+                <AlertTriangle className="w-5 h-5" style={{ color: '#FF9F0A' }} />
                 <div className="absolute inset-0 animate-pulse-wave rounded-full" />
               </div>
               <h2 className="font-bold text-base md:text-lg">3. 注意力干扰源</h2>
               <span className="text-xs text-white/50">决定记忆断片原因</span>
             </div>
 
-            {/* 分心开关 */}
+            {/* 警示级黑玻璃容器 */}
             <div 
               className={`
-                p-4 rounded-xl border-2 transition-all duration-500
+                p-5 rounded-xl border-2 transition-all duration-500 backdrop-blur-lg
                 ${isDistracted 
-                  ? 'bg-amber-500/10 border-amber-500/50' 
-                  : 'bg-white/5 border-white/10'
+                  ? 'bg-black/60 border-[#FF9F0A] shadow-[0_0_25px_rgba(255,159,10,0.3)]' 
+                  : 'bg-black/40 border-[#FF9F0A]/30 hover:border-[#FF9F0A]/50'
                 }
               `}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <span className="text-2xl">{isDistracted ? '🔴' : '⚪'}</span>
+                  <AlertTriangle 
+                    className={`w-5 h-5 transition-all duration-300 ${isDistracted ? 'text-[#FF9F0A]' : 'text-white/50'}`} 
+                  />
                   <div>
                     <div className="font-medium">我当时分心了</div>
                     <div className="text-xs text-white/50">
@@ -366,7 +433,7 @@ export default function Step4Page() {
                   }}
                   className={`
                     relative w-14 h-7 rounded-full transition-all duration-300
-                    ${isDistracted ? 'bg-amber-500' : 'bg-white/20'}
+                    ${isDistracted ? 'bg-[#FF9F0A] shadow-[0_0_15px_rgba(255,159,10,0.4)]' : 'bg-white/20'}
                   `}
                 >
                   <div 
@@ -381,7 +448,7 @@ export default function Step4Page() {
 
               {/* 干扰源选项（展开） */}
               {isDistracted && (
-                <div className="mt-4 pt-4 border-t border-white/10 space-y-3 animate-fade-in-up">
+                <div className="mt-4 pt-4 border-t border-[#FF9F0A]/20 space-y-3 animate-fade-in-up">
                   <p className="text-sm text-white/70">具体是什么干扰了你？（可多选）</p>
                   
                   <div className="flex flex-wrap gap-2">
@@ -393,15 +460,14 @@ export default function Step4Page() {
                           onClick={() => toggleDistraction(distraction.id)}
                           className={`
                             px-4 py-2.5 rounded-full text-sm font-medium
-                            border transition-all duration-300 flex items-center gap-2
+                            border-2 transition-all duration-300 flex items-center gap-2
                             ${isSelected 
-                              ? 'bg-amber-500/20 border-amber-500 text-white shadow-[0_0_15px_rgba(245,158,11,0.3)]' 
-                              : 'bg-white/5 border-white/20 text-white/80 hover:bg-white/10 hover:border-white/40'
+                              ? 'bg-[#FF9F0A]/20 border-[#FF9F0A] text-white shadow-[0_0_15px_rgba(255,159,10,0.3)]' 
+                              : 'bg-transparent border-[#FF9F0A]/40 text-white/80 hover:bg-[#FF9F0A]/10 hover:border-[#FF9F0A]/60'
                             }
                           `}
                         >
                           {isSelected && <Check className="w-3.5 h-3.5" />}
-                          <span>{distraction.icon}</span>
                           <span>{distraction.label}</span>
                         </button>
                       )
@@ -415,10 +481,9 @@ export default function Step4Page() {
                           setCustomDistractions(customDistractions.filter((_, i) => i !== idx))
                           setSelectedDistractions(selectedDistractions.filter(d => d !== `custom_${custom}`))
                         }}
-                        className="px-4 py-2.5 rounded-full text-sm font-medium bg-amber-500/20 border border-amber-500 text-white shadow-[0_0_15px_rgba(245,158,11,0.3)] flex items-center gap-2"
+                        className="px-4 py-2.5 rounded-full text-sm font-medium bg-[#FF9F0A]/20 border-2 border-[#FF9F0A] text-white shadow-[0_0_15px_rgba(255,159,10,0.3)] flex items-center gap-2"
                       >
                         <Check className="w-3.5 h-3.5" />
-                        <span>✨</span>
                         <span>{custom}</span>
                       </button>
                     ))}
@@ -427,7 +492,7 @@ export default function Step4Page() {
                     {!showDistractionCustom ? (
                       <button
                         onClick={() => setShowDistractionCustom(true)}
-                        className="px-4 py-2.5 rounded-full text-sm font-medium border-2 border-dashed border-white/20 text-white/60 hover:border-amber-500/50 hover:text-white/80 transition-all flex items-center gap-2"
+                        className="px-4 py-2.5 rounded-full text-sm font-medium border-2 border-dashed border-[#FF9F0A]/40 text-white/60 hover:border-[#FF9F0A]/60 hover:text-white/80 transition-all flex items-center gap-2"
                       >
                         <Plus className="w-4 h-4" />
                         <span>其他干扰</span>
@@ -440,7 +505,7 @@ export default function Step4Page() {
                           onChange={(e) => setDistractionCustomText(e.target.value)}
                           placeholder="输入干扰..."
                           autoFocus
-                          className="px-4 py-2 rounded-full text-sm bg-amber-500/10 border-2 border-amber-500 focus:outline-none w-32"
+                          className="px-4 py-2 rounded-full text-sm bg-[#FF9F0A]/10 border-2 border-[#FF9F0A] focus:outline-none w-32 placeholder:text-white/40"
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') addCustomDistraction()
                             if (e.key === 'Escape') {
@@ -451,7 +516,7 @@ export default function Step4Page() {
                         />
                         <button
                           onClick={addCustomDistraction}
-                          className="p-2 rounded-full bg-amber-500 text-black"
+                          className="p-2 rounded-full bg-[#FF9F0A] text-black shadow-[0_0_10px_rgba(255,159,10,0.4)]"
                         >
                           <Check className="w-4 h-4" />
                         </button>
@@ -461,9 +526,9 @@ export default function Step4Page() {
 
                   {/* 分心提示 */}
                   {selectedDistractions.length > 0 && (
-                    <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 animate-fade-in-up">
+                    <div className="p-3 rounded-xl bg-[#FF9F0A]/10 border border-[#FF9F0A]/30 animate-fade-in-up backdrop-blur-md">
                       <p className="text-xs text-center">
-                        <span className="font-bold text-amber-400">⚠️ 干扰因素已记录</span>
+                        <span className="font-bold text-[#FF9F0A]">⚠️ 干扰因素已记录</span>
                         <span className="text-white/60 ml-2">
                           AI 将重点分析"自动驾驶"行为模式和无意识放置区域
                         </span>

@@ -373,10 +373,10 @@ export default function Step1Page() {
   const router = useRouter()
   const { session, updateSession } = useSearchStore()
   
-  const [selectedCategory, setSelectedCategory] = useState<string>(session.itemCategory)
-  const [selectedItem, setSelectedItem] = useState<string>(session.itemType)
-  const [itemCustomName, setItemCustomName] = useState<string>(session.itemCustomName)
-  const [itemColor, setItemColor] = useState<string>(session.itemColor)
+  const [selectedCategory, setSelectedCategory] = useState<string>(session.itemCategory || '')
+  const [selectedItem, setSelectedItem] = useState<string>(session.itemType || '')
+  const [itemCustomName, setItemCustomName] = useState<string>(session.itemCustomName || '')
+  const [itemColor, setItemColor] = useState<string>(session.itemColor || '')
   const [customColorText, setCustomColorText] = useState<string>('')
   const [itemFeatures, setItemFeatures] = useState<string>(session.itemFeatures || '')
   const [selectedFeatureTags, setSelectedFeatureTags] = useState<string[]>([])
@@ -569,14 +569,21 @@ export default function Step1Page() {
                 ))}
               </div>
 
-              {selectedItem === 'completely_other' && (
-                <input
-                  type="text"
-                  value={itemCustomName}
-                  onChange={(e) => setItemCustomName(e.target.value)}
-                  placeholder="输入物品名称"
-                  className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm focus:border-[var(--holo-blue)] focus:ring-2 focus:ring-[var(--holo-blue)]/20 transition-all"
-                />
+              {/* 自定义物品输入框 - 对所有 _other 结尾的选项显示 */}
+              {selectedItem && (selectedItem.endsWith('_other') || selectedItem === 'completely_other') && (
+                <div className="space-y-2 animate-fade-in-up">
+                  <input
+                    type="text"
+                    value={itemCustomName}
+                    onChange={(e) => setItemCustomName(e.target.value)}
+                    placeholder="请输入物品名称..."
+                    autoFocus
+                    className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm focus:border-[var(--holo-blue)] focus:ring-2 focus:ring-[var(--holo-blue)]/20 transition-all"
+                  />
+                  <p className="text-xs text-white/40 px-1">
+                    💡 例如：充电宝、保温杯、护照、项链、仓鼠等
+                  </p>
+                </div>
               )}
             </div>
           )}
