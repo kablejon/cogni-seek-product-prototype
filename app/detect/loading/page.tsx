@@ -8,37 +8,60 @@ import { getDefaultAnalysisResult } from "@/lib/ai-service"
 import { InteractiveFog } from "@/components/ui/interactive-fog"
 import { HolographicBrain } from "@/components/ui/holographic-brain"
 
-const analysisSteps = [
-  { text: "正在连接神经元网络...", subtitle: "启动量子推演引擎", icon: "🌐" },
-  { text: "正在检索 3D 空间数据库...", subtitle: "匹配 15,000+ 成功案例", icon: "🔍" },
-  { text: "正在解析行为心理矩阵...", subtitle: "计算记忆盲区概率", icon: "🧠" },
-  { text: "正在运行物理模拟算法...", subtitle: "追踪物品位移轨迹", icon: "🎯" },
-  { text: "正在生成战术指导路径...", subtitle: "构建优先级排查地图", icon: "🗺️" },
-  { text: "分析完成！", subtitle: "准备展示结果", icon: "✅" },
+// 三个阶段的加载文案
+const loadingPhases = [
+  {
+    duration: 2000, // 0-2s
+    text: "正在构建三维空间模型...",
+    subtext: "导入重力沉降参数...",
+    phase: "物理层"
+  },
+  {
+    duration: 3000, // 2-5s  
+    text: "检测到焦虑情绪……",
+    subtext: "正在过滤无效记忆干扰……请深呼吸……",
+    phase: "心理层"
+  },
+  {
+    duration: 2000, // 5-7s
+    text: "多维排查完成",
+    subtext: "已锁定 3 个高价值盲区",
+    phase: "逻辑层"
+  },
 ]
 
 export default function LoadingPage() {
   const router = useRouter()
   const { session, setAnalysisResult, setIsAnalyzing } = useSearchStore()
-  const [currentStep, setCurrentStep] = useState(0)
+  const [currentPhase, setCurrentPhase] = useState(0) // 当前阶段
   const [progress, setProgress] = useState(0)
-  const [statusText, setStatusText] = useState("")
   const [isComplete, setIsComplete] = useState(false)
+  const [showTargetLocked, setShowTargetLocked] = useState(false)
   
   // 使用 ref 来防止重复调用
   const isCallingRef = useRef(false)
   const hasCalledRef = useRef(false)
 
-  // 步骤动画
+  // 阶段切换动画
   useEffect(() => {
-    const stepInterval = setInterval(() => {
-      setCurrentStep((prev) => {
-        if (prev < analysisSteps.length - 1) return prev + 1
-        return prev
-      })
-    }, 600)
-
-    return () => clearInterval(stepInterval)
+    let phaseTimer: NodeJS.Timeout
+    let currentPhaseIndex = 0
+    
+    const nextPhase = () => {
+      if (currentPhaseIndex < loadingPhases.length - 1) {
+        currentPhaseIndex++
+        setCurrentPhase(currentPhaseIndex)
+        phaseTimer = setTimeout(nextPhase, loadingPhases[currentPhaseIndex].duration)
+      } else {
+        // 最后阶段：显示 "Target Locked"
+        setShowTargetLocked(true)
+      }
+    }
+    
+    // 启动第一个阶段
+    phaseTimer = setTimeout(nextPhase, loadingPhases[0].duration)
+    
+    return () => clearTimeout(phaseTimer)
   }, [])
 
   // 智能进度条动画 - 模拟真实加载体验
@@ -88,8 +111,6 @@ export default function LoadingPage() {
     setIsAnalyzing(true)
 
     const callAI = async () => {
-      setStatusText("正在连接分析服务...")
-      
       try {
         // V7.0: 直接发送 session 数据，让 API 进行万物分类
         const response = await fetch('/api/analyze', {
@@ -116,8 +137,6 @@ export default function LoadingPage() {
           const data = await response.json()
           
           if (data.result && data.result.probability && data.result.predictions) {
-            setStatusText("分析完成！")
-            setCurrentStep(analysisSteps.length - 1)
             setAnalysisResult(data.result)
             setIsComplete(true)
             
@@ -135,11 +154,8 @@ export default function LoadingPage() {
       } catch (error) {
         hasCalledRef.current = true
         
-        setStatusText("正在生成分析结果...")
         const fallbackResult = getDefaultAnalysisResult(session)
         setAnalysisResult(fallbackResult)
-        setCurrentStep(analysisSteps.length - 1)
-        setStatusText("分析完成！")
         setIsComplete(true)
         
         setTimeout(() => {
@@ -181,113 +197,223 @@ export default function LoadingPage() {
       <main className="flex-1 flex items-center justify-center p-4 relative z-10">
         <div className="max-w-2xl w-full space-y-10">
           
-          {/* 反应堆圆环动画 */}
+          {/* 3D 神经网络光球 + 线框扫描背景 */}
           <div className="flex justify-center">
-            <div className="relative w-64 h-64 md:w-80 md:h-80">
-              {/* 全息球粒子动画 */}
-              <HolographicBrain 
-                keywords={[
-                  session.itemCustomName || '物品',
-                  session.lastSeenLocation || '位置',
-                  session.mood || '状态',
-                ]}
-              />
+            <div className="relative w-80 h-80 md:w-96 md:h-96">
+              {/* 背景：3D 线框空间扫描图 */}
+              <div className="absolute inset-0 opacity-20">
+                <svg className="w-full h-full" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+                  {/* 房间线框 */}
+                  <path 
+                    d="M 50 100 L 50 300 L 200 350 L 350 300 L 350 100 L 200 50 Z M 50 100 L 200 50 L 200 350 M 350 100 L 200 50 M 350 300 L 200 350"
+                    stroke="#2DE1FC"
+                    strokeWidth="1"
+                    fill="none"
+                    opacity="0.6"
+                  />
+                  {/* 扫描线网格 */}
+                  {[...Array(10)].map((_, i) => (
+                    <line 
+                      key={`h-${i}`}
+                      x1="50" 
+                      y1={100 + i * 20} 
+                      x2="350" 
+                      y2={100 + i * 20}
+                      stroke="#2DE1FC"
+                      strokeWidth="0.5"
+                      opacity="0.3"
+                    />
+                  ))}
+                  {[...Array(10)].map((_, i) => (
+                    <line 
+                      key={`v-${i}`}
+                      x1={50 + i * 30} 
+                      y1="100" 
+                      x2={50 + i * 30} 
+                      y2="300"
+                      stroke="#2DE1FC"
+                      strokeWidth="0.5"
+                      opacity="0.3"
+                    />
+                  ))}
+                </svg>
+              </div>
               
-              {/* 中心反应堆发光核心 */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="w-24 h-24 rounded-full flex items-center justify-center relative">
-                  {/* 外层脉冲光环 */}
-                  <div className="absolute inset-0 rounded-full animate-pulse-wave" style={{ 
-                    background: 'radial-gradient(circle, var(--holo-blue-glow) 0%, transparent 70%)',
-                  }} />
+              {/* 中心：3D 神经网络光球（呼吸感动效）*/}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="relative w-48 h-48 md:w-56 md:h-56">
+                  {/* 外层呼吸光环 */}
+                  <div 
+                    className="absolute inset-0 rounded-full"
+                    style={{ 
+                      background: 'radial-gradient(circle, rgba(45,225,252,0.3) 0%, transparent 70%)',
+                      animation: 'breathe 4s ease-in-out infinite'
+                    }} 
+                  />
                   
-                  {/* 发光内核 */}
-                  <div className="relative w-20 h-20 rounded-full flex items-center justify-center animate-pulse"
-                       style={{
-                         background: 'radial-gradient(circle, var(--holo-blue) 0%, var(--cyber-green) 100%)',
-                         boxShadow: '0 0 40px var(--holo-blue-glow), inset 0 0 30px rgba(255,255,255,0.3)',
-                       }}>
-                    <span className="text-4xl filter drop-shadow-lg">{analysisSteps[currentStep].icon}</span>
+                  {/* 中层旋转粒子环 */}
+                  <div className="absolute inset-4 rounded-full border-2 border-[#2DE1FC]/30 animate-spin-slow" />
+                  <div className="absolute inset-8 rounded-full border border-[#2DE1FC]/20 animate-spin-reverse-slow" />
+                  
+                  {/* 内核光球（呼吸动效）*/}
+                  <div 
+                    className="absolute inset-16 rounded-full flex items-center justify-center"
+                    style={{
+                      background: 'radial-gradient(circle, #2DE1FC 0%, #10b981 100%)',
+                      boxShadow: '0 0 60px rgba(45,225,252,0.6), inset 0 0 40px rgba(255,255,255,0.3)',
+                      animation: 'breathe-glow 3s ease-in-out infinite'
+                    }}
+                  >
+                    {/* 绿色代码流 */}
+                    {currentPhase === 0 && (
+                      <div className="absolute inset-0 flex items-center justify-center overflow-hidden rounded-full">
+                        {[...Array(20)].map((_, i) => (
+                          <div
+                            key={i}
+                            className="absolute w-px h-8 bg-[#10b981]"
+                            style={{
+                              left: `${Math.random() * 100}%`,
+                              top: `${Math.random() * 100}%`,
+                              animation: `codeFlow ${1 + Math.random()}s linear infinite`,
+                              opacity: 0.7
+                            }}
+                          />
+                        ))}
+                      </div>
+                    )}
                   </div>
+                  
+                  {/* Target Locked 效果 */}
+                  {showTargetLocked && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div 
+                        className="text-2xl font-bold text-[#FFD700] tracking-wider animate-pulse"
+                        style={{
+                          textShadow: '0 0 20px rgba(255,215,0,0.8), 0 0 40px rgba(255,215,0,0.5)'
+                        }}
+                      >
+                        TARGET LOCKED
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
-
-              {/* 扫描线效果 */}
-              <div className="scan-line" />
             </div>
           </div>
 
-          {/* 打字机效果文字区 */}
+          {/* 添加CSS动画 */}
+          <style jsx>{`
+            @keyframes breathe {
+              0%, 100% { transform: scale(1); opacity: 0.3; }
+              50% { transform: scale(1.2); opacity: 0.6; }
+            }
+            @keyframes breathe-glow {
+              0%, 100% { 
+                transform: scale(1); 
+                box-shadow: 0 0 60px rgba(45,225,252,0.6), inset 0 0 40px rgba(255,255,255,0.3);
+              }
+              50% { 
+                transform: scale(1.05); 
+                box-shadow: 0 0 80px rgba(45,225,252,0.9), inset 0 0 60px rgba(255,255,255,0.5);
+              }
+            }
+            @keyframes codeFlow {
+              0% { transform: translateY(-20px); opacity: 0; }
+              50% { opacity: 1; }
+              100% { transform: translateY(20px); opacity: 0; }
+            }
+            @keyframes spin-slow {
+              from { transform: rotate(0deg); }
+              to { transform: rotate(360deg); }
+            }
+            @keyframes spin-reverse-slow {
+              from { transform: rotate(360deg); }
+              to { transform: rotate(0deg); }
+            }
+            .animate-spin-slow {
+              animation: spin-slow 20s linear infinite;
+            }
+            .animate-spin-reverse-slow {
+              animation: spin-reverse-slow 15s linear infinite;
+            }
+          `}</style>
+
+          {/* 阶段文案显示区 */}
           <div className="scifi-container p-8 space-y-6">
             <div className="text-center space-y-4">
-              {/* 状态指示器 */}
+              {/* 阶段指示器 */}
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border-2"
                    style={{
                      backgroundColor: 'rgba(45, 225, 252, 0.1)',
-                     borderColor: 'var(--holo-blue)',
-                     boxShadow: '0 0 20px var(--holo-blue-glow)',
+                     borderColor: currentPhase === 0 ? '#10b981' : currentPhase === 1 ? '#2DE1FC' : '#FFD700',
+                     boxShadow: `0 0 20px ${currentPhase === 0 ? 'rgba(16,185,129,0.5)' : currentPhase === 1 ? 'rgba(45,225,252,0.5)' : 'rgba(255,215,0,0.5)'}`,
                    }}>
-                <div className="w-2.5 h-2.5 rounded-full animate-pulse" style={{ backgroundColor: 'var(--cyber-green)' }} />
-                <span className="text-sm font-mono font-semibold" style={{ color: 'var(--holo-blue)' }}>
-                  {isComplete ? "ANALYSIS COMPLETE" : "ANALYZING..."}
+                <div 
+                  className="w-2.5 h-2.5 rounded-full animate-pulse" 
+                  style={{ 
+                    backgroundColor: currentPhase === 0 ? '#10b981' : currentPhase === 1 ? '#2DE1FC' : '#FFD700' 
+                  }} 
+                />
+                <span className="text-sm font-mono font-semibold" style={{ 
+                  color: currentPhase === 0 ? '#10b981' : currentPhase === 1 ? '#2DE1FC' : '#FFD700'
+                }}>
+                  {loadingPhases[currentPhase].phase}
                 </span>
               </div>
               
-              {/* 主标题 - 放大+加粗 */}
-              <h2 className="text-2xl md:text-4xl font-bold leading-tight tracking-tight">
-                {analysisSteps[currentStep].text}
+              {/* 主标题 - 根据阶段变化 */}
+              <h2 className="text-2xl md:text-4xl font-bold leading-tight tracking-tight animate-fade-in">
+                {loadingPhases[currentPhase].text}
               </h2>
               
               {/* 副标题 - 等宽字体科技感 */}
-              <p className="text-sm md:text-base font-mono" style={{ color: 'var(--cyber-green)' }}>
-                {analysisSteps[currentStep].subtitle}
+              <p 
+                className="text-sm md:text-base font-mono animate-fade-in" 
+                style={{ 
+                  color: currentPhase === 0 ? '#10b981' : currentPhase === 1 ? '#2DE1FC' : '#FFD700',
+                  animationDelay: '0.2s'
+                }}
+              >
+                {loadingPhases[currentPhase].subtext}
               </p>
             </div>
 
-            {/* 步骤列表 - 简化版 */}
-            <div className="space-y-2">
-              {analysisSteps.map((step, index) => (
-                <div
-                  key={index}
-                  className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-300 ${
-                    index <= currentStep 
-                      ? "opacity-100 bg-white/5" 
-                      : "opacity-20"
-                  }`}
-                >
-                  <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs ${
-                    index < currentStep
-                      ? "bg-[var(--cyber-green)] text-black"
-                      : index === currentStep
-                        ? "bg-[var(--holo-blue)] text-black animate-pulse"
-                        : "bg-white/10"
-                  }`}>
-                    {index < currentStep ? "✓" : index + 1}
-                  </div>
-                  <span className={`text-xs font-medium ${
-                    index === currentStep ? "text-white" : "text-muted-foreground"
-                  }`}>
-                    {step.text.replace(/\.\.\./g, '')}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            {/* 进度条 - 发光样式 */}
+            {/* 简化的进度条 */}
             <div className="space-y-2">
               <div className="flex justify-between text-xs font-mono text-muted-foreground">
-                <span>PROGRESS</span>
-                <span className="font-bold" style={{ color: 'var(--cyber-green)' }}>{Math.round(progress)}%</span>
+                <span>NEURAL NETWORK SYNC</span>
+                <span className="font-bold" style={{ color: '#2DE1FC' }}>{Math.round(progress)}%</span>
               </div>
-              <div className="slider-glow">
+              <div className="relative h-2 bg-white/5 rounded-full overflow-hidden">
                 <div
-                  className="slider-track h-2 rounded-full transition-all duration-150 ease-out"
+                  className="absolute top-0 left-0 h-full transition-all duration-300 ease-out rounded-full"
                   style={{ 
                     width: `${progress}%`,
-                    background: 'linear-gradient(90deg, var(--holo-blue) 0%, var(--cyber-green) 100%)',
+                    background: currentPhase === 0 
+                      ? 'linear-gradient(90deg, #10b981 0%, #2DE1FC 100%)'
+                      : currentPhase === 1
+                        ? 'linear-gradient(90deg, #2DE1FC 0%, #818cf8 100%)'
+                        : 'linear-gradient(90deg, #FFD700 0%, #FF9F0A 100%)',
+                    boxShadow: currentPhase === 0 
+                      ? '0 0 20px rgba(16,185,129,0.6)'
+                      : currentPhase === 1
+                        ? '0 0 20px rgba(45,225,252,0.6)'
+                        : '0 0 20px rgba(255,215,0,0.6)'
                   }}
                 />
               </div>
+            </div>
+
+            {/* 阶段提示 */}
+            <div className="flex justify-center gap-2">
+              {loadingPhases.map((_, index) => (
+                <div 
+                  key={index}
+                  className={`h-1 rounded-full transition-all duration-300 ${
+                    index <= currentPhase ? 'w-8 bg-[#2DE1FC]' : 'w-4 bg-white/20'
+                  }`}
+                />
+              ))}
             </div>
           </div>
 
