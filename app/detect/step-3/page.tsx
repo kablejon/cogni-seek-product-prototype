@@ -182,7 +182,7 @@ const SCENE_CARDS = [
     IconComponent: HoloHomeIcon,
     label: '家里', 
     desc: '住所、房间',
-    subAreas: ['客厅', '卧室', '厨房', '卫生间', '玄关/门口', '阳台', '书房', '其他房间'],
+    subAreas: ['客厅', '卧室', '厨房', '卫生间', '玄关/门口', '阳台', '书房'],
     placeholder: '例如：沙发缝隙里、床头柜上、洗衣机里...'
   },
   { 
@@ -210,7 +210,7 @@ const SCENE_CARDS = [
     IconComponent: HoloOutdoorIcon,
     label: '户外/公共场所', 
     desc: '商场、餐厅等',
-    subAreas: ['商场/超市', '餐厅', '咖啡厅', '健身房', '公园', '医院', '银行', '其他场所'],
+    subAreas: ['商场/超市', '餐厅', '咖啡厅', '健身房', '公园', '医院', '银行'],
     placeholder: '例如：公园长椅下、收银台旁边、试衣间...'
   },
 ]
@@ -224,6 +224,14 @@ export default function Step3Page() {
     session.otherVisitedLocations || []
   )
   const [customLocation, setCustomLocation] = useState(session.locationCustom || '')
+  
+  // 自定义区域管理（按场景隔离）
+  const [customAreasByScene, setCustomAreasByScene] = useState<Record<string, string[]>>({})
+  const [showCustomAreaInput, setShowCustomAreaInput] = useState(false)
+  const [customAreaText, setCustomAreaText] = useState('')
+  
+  // 获取当前场景的自定义区域
+  const currentSceneCustomAreas = customAreasByScene[selectedScene] || []
 
   const currentScene = SCENE_CARDS.find(s => s.id === selectedScene)
 
@@ -239,6 +247,39 @@ export default function Step3Page() {
       setSelectedSubAreas(selectedSubAreas.filter(a => a !== area))
     } else {
       setSelectedSubAreas([...selectedSubAreas, area])
+    }
+  }
+
+  // 添加自定义区域（按当前场景）
+  const addCustomArea = () => {
+    if (customAreaText.trim() && selectedScene) {
+      const newArea = customAreaText.trim()
+      const currentAreas = customAreasByScene[selectedScene] || []
+      
+      setCustomAreasByScene({
+        ...customAreasByScene,
+        [selectedScene]: [...currentAreas, newArea]
+      })
+      
+      // 自动选中新添加的区域
+      setSelectedSubAreas([...selectedSubAreas, newArea])
+      setCustomAreaText('')
+      setShowCustomAreaInput(false)
+    }
+  }
+
+  // 删除自定义区域
+  const removeCustomArea = (area: string) => {
+    if (selectedScene) {
+      const currentAreas = customAreasByScene[selectedScene] || []
+      
+      setCustomAreasByScene({
+        ...customAreasByScene,
+        [selectedScene]: currentAreas.filter(a => a !== area)
+      })
+      
+      // 同时从选中列表中移除
+      setSelectedSubAreas(selectedSubAreas.filter(a => a !== area))
     }
   }
 
@@ -359,12 +400,13 @@ export default function Step3Page() {
                   {/* 标签云 - 分组显示 (仅车/通勤路上) */}
                   {'subAreasGrouped' in currentScene && currentScene.subAreasGrouped ? (
                     <div className="space-y-4">
-                      {Object.entries(currentScene.subAreasGrouped).map(([groupName, areas]) => (
+                      {Object.entries(currentScene.subAreasGrouped).map(([groupName, areas], groupIndex, allGroups) => (
                         <div key={groupName} className="space-y-2">
                           <div className="text-[10px] text-white/30 font-medium tracking-wider uppercase pl-1">
                             [ {groupName} ]
                           </div>
                           <div className="flex flex-wrap gap-2">
+                            {/* 预设区域 */}
                             {areas.map((area) => {
                               const isAreaSelected = selectedSubAreas.includes(area)
                               return (
@@ -382,6 +424,69 @@ export default function Step3Page() {
                                 </button>
                               )
                             })}
+                            
+                            {/* 自定义区域（仅在最后一组显示） */}
+                            {groupIndex === allGroups.length - 1 && currentSceneCustomAreas.map((area, idx) => {
+                              const isAreaSelected = selectedSubAreas.includes(area)
+                              return (
+                                <button
+                                  key={`custom_${idx}`}
+                                  onClick={() => handleSubAreaToggle(area)}
+                                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 relative group ${
+                                    isAreaSelected 
+                                      ? 'bg-transparent border-2 border-[var(--cyber-green)] text-[var(--cyber-green)] shadow-[0_0_15px_rgba(45,225,252,0.3),inset_0_0_10px_rgba(45,225,252,0.1)]' 
+                                      : 'bg-white/[0.03] border border-white/10 text-white/60 hover:bg-white/[0.06] hover:border-white/20 hover:text-white/80'
+                                  }`}
+                                >
+                                  {isAreaSelected && <Check className="w-3.5 h-3.5 inline mr-1.5" />}
+                                  <span>{area}</span>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      removeCustomArea(area)
+                                    }}
+                                    className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity text-white/60 hover:text-red-400"
+                                  >
+                                    ×
+                                  </button>
+                                </button>
+                              )
+                            })}
+                            
+                            {/* + 其他按钮/输入框（仅在最后一组显示） */}
+                            {groupIndex === allGroups.length - 1 && (
+                              !showCustomAreaInput ? (
+                                <button
+                                  onClick={() => setShowCustomAreaInput(true)}
+                                  className="px-4 py-2 rounded-full text-sm font-medium border-2 border-dashed border-white/30 text-white/60 hover:border-[var(--cyber-green)]/50 hover:text-white/80 transition-all"
+                                >
+                                  <span className="text-base mr-1">+</span>其他
+                                </button>
+                              ) : (
+                                <input
+                                  type="text"
+                                  value={customAreaText}
+                                  onChange={(e) => setCustomAreaText(e.target.value)}
+                                  placeholder="输入区域..."
+                                  autoFocus
+                                  className="px-4 py-2 rounded-full text-sm bg-[var(--cyber-green)]/10 border-2 border-[var(--cyber-green)] focus:outline-none w-32 placeholder:text-white/40"
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') addCustomArea()
+                                    if (e.key === 'Escape') {
+                                      setShowCustomAreaInput(false)
+                                      setCustomAreaText('')
+                                    }
+                                  }}
+                                  onBlur={() => {
+                                    if (customAreaText.trim()) {
+                                      addCustomArea()
+                                    } else {
+                                      setShowCustomAreaInput(false)
+                                    }
+                                  }}
+                                />
+                              )
+                            )}
                           </div>
                         </div>
                       ))}
@@ -389,6 +494,7 @@ export default function Step3Page() {
                   ) : (
                     /* 标签云 - 普通显示 */
                     <div className="flex flex-wrap gap-2">
+                      {/* 预设区域 */}
                       {currentScene.subAreas.map((area) => {
                         const isAreaSelected = selectedSubAreas.includes(area)
                         return (
@@ -406,6 +512,67 @@ export default function Step3Page() {
                           </button>
                         )
                       })}
+                      
+                      {/* 自定义区域 */}
+                      {currentSceneCustomAreas.map((area, idx) => {
+                        const isAreaSelected = selectedSubAreas.includes(area)
+                        return (
+                          <button
+                            key={`custom_${idx}`}
+                            onClick={() => handleSubAreaToggle(area)}
+                            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 relative group ${
+                              isAreaSelected 
+                                ? 'bg-transparent border-2 border-[var(--cyber-green)] text-[var(--cyber-green)] shadow-[0_0_15px_rgba(45,225,252,0.3),inset_0_0_10px_rgba(45,225,252,0.1)]' 
+                                : 'bg-white/[0.03] border border-white/10 text-white/60 hover:bg-white/[0.06] hover:border-white/20 hover:text-white/80'
+                            }`}
+                          >
+                            {isAreaSelected && <Check className="w-3.5 h-3.5 inline mr-1.5" />}
+                            <span>{area}</span>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                removeCustomArea(area)
+                              }}
+                              className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity text-white/60 hover:text-red-400"
+                            >
+                              ×
+                            </button>
+                          </button>
+                        )
+                      })}
+                      
+                      {/* + 其他按钮/输入框 */}
+                      {!showCustomAreaInput ? (
+                        <button
+                          onClick={() => setShowCustomAreaInput(true)}
+                          className="px-4 py-2 rounded-full text-sm font-medium border-2 border-dashed border-white/30 text-white/60 hover:border-[var(--cyber-green)]/50 hover:text-white/80 transition-all"
+                        >
+                          <span className="text-base mr-1">+</span>其他
+                        </button>
+                      ) : (
+                        <input
+                          type="text"
+                          value={customAreaText}
+                          onChange={(e) => setCustomAreaText(e.target.value)}
+                          placeholder="输入区域..."
+                          autoFocus
+                          className="px-4 py-2 rounded-full text-sm bg-[var(--cyber-green)]/10 border-2 border-[var(--cyber-green)] focus:outline-none w-32 placeholder:text-white/40"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') addCustomArea()
+                            if (e.key === 'Escape') {
+                              setShowCustomAreaInput(false)
+                              setCustomAreaText('')
+                            }
+                          }}
+                          onBlur={() => {
+                            if (customAreaText.trim()) {
+                              addCustomArea()
+                            } else {
+                              setShowCustomAreaInput(false)
+                            }
+                          }}
+                        />
+                      )}
                     </div>
                   )}
 

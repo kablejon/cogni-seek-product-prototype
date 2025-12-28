@@ -382,6 +382,14 @@ export default function Step1Page() {
   const [selectedFeatureTags, setSelectedFeatureTags] = useState<string[]>([])
   const [itemSize, setItemSize] = useState<string>('')
   const [customSizeText, setCustomSizeText] = useState<string>('')
+  
+  // 自定义物品管理（按类别隔离）
+  const [customItemsByCategory, setCustomItemsByCategory] = useState<Record<string, string[]>>({})
+  const [showCustomItemInput, setShowCustomItemInput] = useState(false)
+  const [customItemText, setCustomItemText] = useState('')
+  
+  // 获取当前类别的自定义物品
+  const currentCategoryCustomItems = customItemsByCategory[selectedCategory] || []
 
   // 获取当前物品的配置
   const currentConfig = ITEM_MAPPING_CONFIG[selectedItem] || ITEM_MAPPING_CONFIG['completely_other']
@@ -417,6 +425,41 @@ export default function Step1Page() {
     }
   }
 
+  // 添加自定义物品（按当前类别）
+  const addCustomItem = () => {
+    if (customItemText.trim() && selectedCategory) {
+      const newItem = customItemText.trim()
+      const currentItems = customItemsByCategory[selectedCategory] || []
+      
+      setCustomItemsByCategory({
+        ...customItemsByCategory,
+        [selectedCategory]: [...currentItems, newItem]
+      })
+      
+      setItemCustomName(newItem)
+      setSelectedItem('custom_item')
+      setCustomItemText('')
+      setShowCustomItemInput(false)
+    }
+  }
+
+  // 删除自定义物品（按当前类别）
+  const removeCustomItem = (item: string) => {
+    if (selectedCategory) {
+      const currentItems = customItemsByCategory[selectedCategory] || []
+      
+      setCustomItemsByCategory({
+        ...customItemsByCategory,
+        [selectedCategory]: currentItems.filter(i => i !== item)
+      })
+      
+      if (itemCustomName === item) {
+        setItemCustomName('')
+        setSelectedItem('')
+      }
+    }
+  }
+
   // 是否显示尺寸选择器
   const showSizeSelector = !currentConfig?.hideSize
   
@@ -425,7 +468,7 @@ export default function Step1Page() {
 
   // 验证是否可以继续
   const canProceed = selectedCategory && selectedItem &&
-    (selectedItem !== 'completely_other' || (itemCustomName && itemCustomName.trim())) &&
+    ((!selectedItem.endsWith('_other') && selectedItem !== 'completely_other') || (itemCustomName && itemCustomName.trim())) &&
     (!showColorSelector || (itemColor && (itemColor !== 'other' || (customColorText && customColorText.trim())))) &&
     (!showSizeSelector || (itemSize && (itemSize !== 'custom' || (customSizeText && customSizeText.trim()))))
 
@@ -557,7 +600,10 @@ export default function Step1Page() {
             <div className="space-y-4 animate-fade-in-up">
               <h2 className="text-base md:text-lg font-bold text-white/90">具体物品</h2>
               <div className="flex flex-wrap gap-2">
-                {itemCategories.find(c => c.id === selectedCategory)?.items.map((item) => (
+                {/* 先显示所有非"其他"的预设选项 */}
+                {itemCategories.find(c => c.id === selectedCategory)?.items.filter(item => 
+                  !item.id.endsWith('_other') && item.id !== 'completely_other'
+                ).map((item) => (
                   <button
                     key={item.id}
                     onClick={() => handleItemSelect(item.id)}
@@ -567,24 +613,75 @@ export default function Step1Page() {
                     {item.label}
                   </button>
                 ))}
-              </div>
 
-              {/* 自定义物品输入框 - 对所有 _other 结尾的选项显示 */}
-              {selectedItem && (selectedItem.endsWith('_other') || selectedItem === 'completely_other') && (
-                <div className="space-y-2 animate-fade-in-up">
-                  <input
-                    type="text"
-                    value={itemCustomName}
-                    onChange={(e) => setItemCustomName(e.target.value)}
-                    placeholder="请输入物品名称..."
-                    autoFocus
-                    className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm focus:border-[var(--holo-blue)] focus:ring-2 focus:ring-[var(--holo-blue)]/20 transition-all"
-                  />
-                  <p className="text-xs text-white/40 px-1">
-                    💡 例如：充电宝、保温杯、护照、项链、仓鼠等
-                  </p>
-                </div>
-              )}
+                {/* 然后显示已添加的自定义物品（仅当前类别） */}
+                {currentCategoryCustomItems.map((item, idx) => (
+                  <button
+                    key={`custom_${idx}`}
+                    onClick={() => {
+                      setSelectedItem('custom_item')
+                      setItemCustomName(item)
+                    }}
+                    className={`chip ${itemCustomName === item ? 'chip-selected' : ''} relative group`}
+                  >
+                    {itemCustomName === item && <Check className="w-3 h-3" />}
+                    <span>{item}</span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        removeCustomItem(item)
+                      }}
+                      className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity text-white/60 hover:text-red-400"
+                    >
+                      ×
+                    </button>
+                  </button>
+                ))}
+
+                {/* 最后显示"其他"选项（输入框或按钮），始终在最右边 */}
+                {itemCategories.find(c => c.id === selectedCategory)?.items.filter(item => 
+                  item.id.endsWith('_other') || item.id === 'completely_other'
+                ).map((item) => {
+                  // 如果是"其他"选项，检查是否应该显示输入框
+                  if (showCustomItemInput) {
+                    return (
+                      <input
+                        key={item.id}
+                        type="text"
+                        value={customItemText}
+                        onChange={(e) => setCustomItemText(e.target.value)}
+                        placeholder="输入物品名称..."
+                        autoFocus
+                        className="px-4 py-2 rounded-full text-sm bg-[var(--holo-blue)]/10 border-2 border-[var(--holo-blue)] focus:outline-none w-40 placeholder:text-white/40"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') addCustomItem()
+                          if (e.key === 'Escape') {
+                            setShowCustomItemInput(false)
+                            setCustomItemText('')
+                          }
+                        }}
+                        onBlur={() => {
+                          if (customItemText.trim()) {
+                            addCustomItem()
+                          } else {
+                            setShowCustomItemInput(false)
+                          }
+                        }}
+                      />
+                    )
+                  }
+                  
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => setShowCustomItemInput(true)}
+                      className="chip border-dashed"
+                    >
+                      {item.label}
+                    </button>
+                  )
+                })}
+              </div>
             </div>
           )}
 
