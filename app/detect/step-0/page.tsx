@@ -7,6 +7,7 @@ import { ChevronRight, ChevronLeft, Check } from "lucide-react"
 import { Header } from "@/components/shared/header"
 import { useSearchStore } from "@/lib/store"
 import { InteractiveFog } from "@/components/ui/interactive-fog"
+import { ConfidenceSlider } from "@/components/ui/confidence-slider"
 
 // 六大搜索扇区
 const SECTOR_OPTIONS = [
@@ -115,10 +116,13 @@ export default function Step0Page() {
           {/* 标题区 */}
           <div className="text-center space-y-3">
             <h1 className="text-2xl md:text-3xl font-bold text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">
-              大概在什么场所丢失？
+              确认丢失环境特征
             </h1>
+            <p className="text-xs md:text-sm text-[#2DE1FC]/80 font-mono uppercase tracking-wider">
+              Identify Environment Profile
+            </p>
             <p className="text-sm md:text-base text-white/60">
-              锁定最后一次出现的区域，帮助AI建立空间模型
+              请选定目标所在的物理场域，建立初始化空间模型
             </p>
           </div>
 
@@ -208,63 +212,21 @@ export default function Step0Page() {
               ) : (
                 /* 正常模式 - 显示置信度滑杆 */
                 <div className="p-5 rounded-2xl bg-[#2DE1FC]/5 border border-[#2DE1FC]/20">
-                  <div className="space-y-4">
-                    {/* 问题标题 */}
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="font-bold text-base text-white">
-                          你确定它在这个区域吗？
-                        </h3>
-                        <p className="text-xs text-white/50 mt-1">
-                          {selectedConfig?.aiHint}
-                        </p>
-                      </div>
-                      <div className="text-3xl font-bold font-mono text-[#2DE1FC]">
-                        {confidence}%
-                      </div>
-                    </div>
-
-                    {/* 置信度滑杆 */}
-                    <div className="space-y-2">
-                      <div className="relative h-3 bg-white/10 rounded-full overflow-hidden">
-                        {/* 进度条 */}
-                        <div 
-                          className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#2DE1FC] to-[var(--cyber-green)] rounded-full transition-all duration-200"
-                          style={{ width: `${(confidence - 50) / 50 * 100}%` }}
-                        />
-                        {/* 滑块输入 */}
-                        <input
-                          type="range"
-                          min={50}
-                          max={100}
-                          step={5}
-                          value={confidence}
-                          onChange={(e) => setConfidence(Number(e.target.value))}
-                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                        />
-                        {/* 滑块指示器 */}
-                        <div 
-                          className="absolute top-1/2 -translate-y-1/2 w-5 h-5 bg-white rounded-full shadow-[0_0_10px_rgba(45,225,252,0.8)] transition-all duration-200 pointer-events-none"
-                          style={{ left: `calc(${(confidence - 50) / 50 * 100}% - 10px)` }}
-                        />
-                      </div>
-                      <div className="flex justify-between text-xs text-white/50">
-                        <span>50% 存疑</span>
-                        <span>100% 肯定</span>
-                      </div>
-                    </div>
-
-                    {/* AI策略提示 */}
-                    <div className="p-3 rounded-xl bg-white/5 text-center">
-                      <p className="text-xs text-white/70">
-                        {confidence >= 90 
-                          ? '🎯 AI将在此区域进行深度层次式搜索'
-                          : confidence >= 70
-                            ? '🔍 AI将优先搜索此区域，同时排查周边过渡地带'
-                            : '🌐 AI将扩大搜索半径，检查上一个地点及途中'
-                        }
-                      </p>
-                    </div>
+                  <ConfidenceSlider 
+                    value={confidence} 
+                    onChange={setConfidence} 
+                  />
+                  
+                  {/* AI策略提示 */}
+                  <div className="p-3 rounded-xl bg-white/5 text-center mt-4">
+                    <p className="text-xs text-white/70">
+                      {confidence >= 90 
+                        ? '🎯 AI将在此区域进行深度层次式搜索'
+                        : confidence >= 70
+                          ? '🔍 AI将优先搜索此区域，同时排查周边过渡地带'
+                          : '🌐 AI将扩大搜索半径，检查上一个地点及途中'
+                      }
+                    </p>
                   </div>
                 </div>
               )}

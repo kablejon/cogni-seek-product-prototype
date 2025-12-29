@@ -626,15 +626,15 @@ export default function Step1Page() {
                   >
                     {itemCustomName === item && <Check className="w-3 h-3" />}
                     <span>{item}</span>
-                    <button
+                    <span
                       onClick={(e) => {
                         e.stopPropagation()
                         removeCustomItem(item)
                       }}
-                      className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity text-white/60 hover:text-red-400"
+                      className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity text-white/60 hover:text-red-400 cursor-pointer"
                     >
                       <X className="w-3.5 h-3.5" />
-                    </button>
+                    </span>
                   </button>
                 ))}
 

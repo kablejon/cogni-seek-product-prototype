@@ -83,21 +83,47 @@ export default function ReportPage() {
     
     // 机械锁定音效 (清脆、短促、专业)
     if (typeof window !== 'undefined') {
-      // 这是一个简单的机械点击声 Base64
       audioRef.current = new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=') 
-      // 实际开发建议替换为真实的 "UI Lock Sound" 文件
     }
   }, [])
 
+  // 使用 AI 结果或备用结果
+  const result = analysisResult || getDefaultAnalysisResult(session)
+
+  // 从 AI 分析结果生成战术指令
+  const generateTacticalDirectives = () => {
+    if (!result.predictions || result.predictions.length === 0) {
+      return tacticalDirectives // 使用默认指令
+    }
+
+    // 将 AI 的 predictions 和 checklist 转换为战术指令格式
+    return result.predictions.slice(0, 4).map((pred, index) => {
+      const icons = [Lightbulb, Eye, Search, History]
+      const codes = ['PRIORITY-ALPHA', 'ZONE-BETA', 'CONTEXT-GAMMA', 'AUXILIARY-DELTA']
+      
+      return {
+        id: index + 1,
+        icon: icons[index] || Lightbulb,
+        code: codes[index],
+        title: pred.location,
+        description: pred.technique || '执行精准搜索操作',
+        target: pred.reason,
+        algorithm: `概率: ${pred.confidence}% / 物理学原理`
+      }
+    })
+  }
+
+  const dynamicDirectives = generateTacticalDirectives()
+
   // 监听进度，触发 Plan B
   useEffect(() => {
-    if (completedSteps.length === tacticalDirectives.length && completedSteps.length > 0 && !showContingency) {
+    if (completedSteps.length === dynamicDirectives.length && completedSteps.length > 0 && !showContingency) {
       const timer = setTimeout(() => {
         setShowContingency(true)
       }, 800)
       return () => clearTimeout(timer)
     }
-  }, [completedSteps.length, showContingency])
+  }, [completedSteps.length, showContingency, dynamicDirectives.length])
 
   if (!mounted) return null
 
@@ -113,7 +139,7 @@ export default function ReportPage() {
       const isChecked = prev.includes(index)
       if (!isChecked) {
         // 播放音效
-        // if (audioRef.current) audioRef.current.play().catch(() => {})
+        if (audioRef.current) audioRef.current.play().catch(() => {})
         return [...prev, index]
       } else {
         return prev.filter((i) => i !== index)
@@ -121,7 +147,7 @@ export default function ReportPage() {
     })
   }
 
-  // 获取热力图配置 (保持原有逻辑，但UI风格化)
+  // 获取热力图配置
   const locationCategory = session.locationCategory || 'home'
   const heatmapConfig = {
     home: { title: 'RESIDENTIAL_UNIT_SCAN', zones: ['Sofa Gap', 'Under Table', 'Carpet Edge', 'Cabinet Top'] },
@@ -165,7 +191,7 @@ export default function ReportPage() {
 
       <main className="container mx-auto px-4 py-8 max-w-5xl">
         
-        {/* 档案头信息 (The Header) */}
+        {/* 档案头信息 */}
         <div className="border-l-2 border-cyan-500 pl-6 mb-12 relative overflow-hidden">
           <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
             <Scan className="w-32 h-32" />
@@ -181,9 +207,13 @@ export default function ReportPage() {
               目标锁定：{getItemName()}
             </h1>
             <p className="text-slate-400 max-w-2xl">
-              认知取证分析已完成。系统检测到 <span className="text-white font-semibold">非注意盲视 (Inattentional Blindness)</span> 现象。
-              物品并未丢失，而是处于您的视觉感知盲区。
+              {result.summary || '认知取证分析已完成。系统检测到非注意盲视 (Inattentional Blindness) 现象。物品并未丢失，而是处于您的视觉感知盲区。'}
             </p>
+            {result.behaviorAnalysis && (
+              <p className="text-slate-500 text-sm max-w-2xl mt-2">
+                <span className="text-cyan-400 font-semibold">行为分析：</span>{result.behaviorAnalysis}
+              </p>
+            )}
           </div>
 
           <div className="flex flex-wrap gap-4">
@@ -191,14 +221,14 @@ export default function ReportPage() {
               <Activity className="w-4 h-4 text-emerald-500" />
               <div>
                 <div className="text-[10px] text-slate-500 font-mono uppercase">Recovery Probability</div>
-                <div className="text-lg font-bold text-white font-mono">87.3%</div>
+                <div className="text-lg font-bold text-white font-mono">{result.probability}%</div>
               </div>
             </div>
             <div className="bg-slate-900/50 border border-slate-800 px-4 py-2 rounded flex items-center gap-3">
               <ShieldAlert className="w-4 h-4 text-orange-500" />
               <div>
                 <div className="text-[10px] text-slate-500 font-mono uppercase">Risk Level</div>
-                <div className="text-lg font-bold text-white font-mono">MODERATE</div>
+                <div className="text-lg font-bold text-white font-mono">{result.probabilityLevel.toUpperCase()}</div>
               </div>
             </div>
           </div>
@@ -207,7 +237,7 @@ export default function ReportPage() {
         {/* 核心区域：Grid 布局 */}
         <div className="grid lg:grid-cols-3 gap-8">
           
-          {/* 左侧：空间雷达分析 (Spatial Analysis) */}
+          {/* 左侧：空间雷达分析 */}
           <div className="lg:col-span-2 space-y-6">
             
             {/* 3D 扫描图 */}
@@ -220,19 +250,21 @@ export default function ReportPage() {
               {/* 装饰性的网格背景 */}
               <div className="absolute inset-0 bg-[linear-gradient(rgba(45,225,252,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(45,225,252,0.03)_1px,transparent_1px)] bg-[size:20px_20px]" />
               
-              <div className="relative aspect-video flex items-center justify-center p-8">
+              <div className="relative aspect-video flex items-center justify-center p-8 overflow-hidden">
                 {/* SVG 3D 线框图 */}
-                <svg className="w-full h-full max-w-md drop-shadow-[0_0_15px_rgba(45,225,252,0.1)]" viewBox="0 0 400 300">
+                <svg className="w-full h-full max-w-md drop-shadow-[0_0_15px_rgba(45,225,252,0.1)] relative z-10" viewBox="0 0 400 300">
                   <defs>
                     <linearGradient id="scanGradient" x1="0%" y1="0%" x2="0%" y2="100%">
                       <stop offset="0%" stopColor="rgba(45,225,252,0)" />
-                      <stop offset="50%" stopColor="rgba(45,225,252,0.2)" />
+                      <stop offset="45%" stopColor="rgba(45,225,252,0.1)" />
+                      <stop offset="50%" stopColor="rgba(45,225,252,0.8)" /> {/* 高亮核心，锐利线条 */}
+                      <stop offset="55%" stopColor="rgba(45,225,252,0.1)" />
                       <stop offset="100%" stopColor="rgba(45,225,252,0)" />
                     </linearGradient>
                   </defs>
                   
-                  {/* 扫描光束动画 */}
-                  <rect x="0" y="0" width="400" height="300" fill="url(#scanGradient)" className="animate-scan-vertical" style={{ opacity: 0.3 }} />
+                  {/* 扫描光束动画 - 确保覆盖整个区域 */}
+                  <rect x="0" y="0" width="400" height="300" fill="url(#scanGradient)" className="animate-scan-vertical" />
                   
                   {/* 房间线框 */}
                   <path d="M50 80 L350 80 L350 220 L50 220 Z" fill="none" stroke="#1e293b" strokeWidth="1" />
@@ -240,7 +272,7 @@ export default function ReportPage() {
                   <path d="M50 220 L200 250 L350 220" fill="none" stroke="#334155" strokeWidth="1" />
                   <path d="M200 50 L200 250" fill="none" stroke="#334155" strokeWidth="1" strokeDasharray="4 4" />
                   
-                  {/* 热点标记 - 仅作为示意 */}
+                  {/* 热点标记 */}
                   <circle cx="120" cy="180" r="4" fill="#F97316" className="animate-pulse" />
                   <circle cx="120" cy="180" r="20" fill="none" stroke="#F97316" strokeWidth="1" opacity="0.5" className="animate-ping" />
                   <line x1="120" y1="180" x2="160" y2="140" stroke="#F97316" strokeWidth="1" />
@@ -258,7 +290,28 @@ export default function ReportPage() {
               </div>
             </div>
 
-            {/* 战术执行协议 (Tactical Execution) */}
+            {/* 优先行动提示 */}
+            {result.priorityAction && (
+              <div className="bg-gradient-to-r from-orange-950/30 to-transparent border-l-4 border-orange-500 p-4 rounded-r-lg mb-6">
+                <div className="flex items-start gap-3">
+                  <Lightbulb className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <h4 className="text-sm font-bold text-orange-400 mb-1">⚡ 优先行动 (2分钟规则)</h4>
+                    <p className="text-slate-300 text-sm mb-2">
+                      <span className="font-semibold">目标区域：</span>{result.priorityAction.target}
+                    </p>
+                    <p className="text-slate-300 text-sm mb-2">
+                      <span className="font-semibold">立即执行：</span>{result.priorityAction.action}
+                    </p>
+                    <p className="text-slate-400 text-xs">
+                      <span className="font-semibold">科学依据：</span>{result.priorityAction.why}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 战术执行协议 */}
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <FileText className="w-4 h-4 text-cyan-500" />
@@ -266,7 +319,7 @@ export default function ReportPage() {
               </div>
               
               <div className="space-y-3">
-                {tacticalDirectives.map((item, index) => {
+                {dynamicDirectives.map((item, index) => {
                   const isCompleted = completedSteps.includes(index)
                   const Icon = item.icon
                   
@@ -339,12 +392,12 @@ export default function ReportPage() {
                 <div>
                   <div className="flex justify-between text-xs mb-1.5">
                     <span className="text-slate-400">DIRECTIVES_COMPLETED</span>
-                    <span className="font-mono text-cyan-400">{completedSteps.length}/{tacticalDirectives.length}</span>
+                    <span className="font-mono text-cyan-400">{completedSteps.length}/{dynamicDirectives.length}</span>
                   </div>
                   <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
                     <div 
                       className="h-full bg-cyan-500 transition-all duration-500" 
-                      style={{ width: `${(completedSteps.length / tacticalDirectives.length) * 100}%` }} 
+                      style={{ width: `${(completedSteps.length / dynamicDirectives.length) * 100}%` }} 
                     />
                   </div>
                 </div>
@@ -403,7 +456,6 @@ export default function ReportPage() {
               size="lg" 
               className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-8 rounded shadow-[0_0_20px_rgba(16,185,129,0.2)]"
               onClick={() => {
-                // 这里可以添加结案逻辑
                 resetSession()
                 router.push('/')
               }}

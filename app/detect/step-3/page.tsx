@@ -452,15 +452,15 @@ export default function Step3Page() {
                                 >
                                   {isAreaSelected && <Check className="w-3.5 h-3.5 inline mr-1.5" />}
                                   <span>{area}</span>
-                                  <button
+                                  <span
                                     onClick={(e) => {
                                       e.stopPropagation()
                                       removeCustomArea(area, groupName)
                                     }}
-                                    className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity text-white/60 hover:text-red-400"
+                                    className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity text-white/60 hover:text-red-400 cursor-pointer"
                                   >
                                     <X className="w-3.5 h-3.5" />
-                                  </button>
+                                  </span>
                                 </button>
                               )
                             })}
@@ -538,15 +538,15 @@ export default function Step3Page() {
                           >
                             {isAreaSelected && <Check className="w-3.5 h-3.5 inline mr-1.5" />}
                             <span>{area}</span>
-                            <button
+                            <span
                               onClick={(e) => {
                                 e.stopPropagation()
                                 removeCustomArea(area, 'default')
                               }}
-                              className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity text-white/60 hover:text-red-400"
+                              className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity text-white/60 hover:text-red-400 cursor-pointer"
                             >
                               ×
-                            </button>
+                            </span>
                           </button>
                         )
                       })}
