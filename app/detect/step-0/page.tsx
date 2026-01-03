@@ -74,6 +74,7 @@ export default function Step0Page() {
   
   const [selectedSector, setSelectedSector] = useState<string>('')
   const [confidence, setConfidence] = useState<number>(80)
+  const [hasConfirmedConfidence, setHasConfirmedConfidence] = useState<boolean>(false)
 
   // 获取选中的扇区配置
   const selectedConfig = SECTOR_OPTIONS.find(s => s.id === selectedSector)
@@ -81,13 +82,32 @@ export default function Step0Page() {
   // 是否为不确定模式
   const isUnsureMode = selectedSector === 'Unsure'
 
-  // 是否可以继续
-  const canProceed = selectedSector !== ''
+  // 是否可以继续 - 必须选择区域 + 确认置信度（或选择不确定模式）
+  const canProceed = selectedSector !== '' && (isUnsureMode || hasConfirmedConfidence)
+
+  // 获取缺少的必填项提示（按优先级）
+  const getMissingRequirement = (): string | null => {
+    if (!selectedSector) {
+      return "请先选择一个区域"
+    }
+    if (!isUnsureMode && !hasConfirmedConfidence) {
+      return "请拖动滑块确认置信度"
+    }
+    return null
+  }
 
   const handleSectorSelect = (sectorId: string) => {
     setSelectedSector(sectorId)
     // 重置置信度为默认80%
     setConfidence(80)
+    // 重置确认状态
+    setHasConfirmedConfidence(false)
+  }
+
+  // 处理置信度变化
+  const handleConfidenceChange = (value: number) => {
+    setConfidence(value)
+    setHasConfirmedConfidence(true)
   }
 
   const handleNext = () => {
@@ -95,7 +115,7 @@ export default function Step0Page() {
 
     updateSession({
       lossLocationCategory: selectedSector,
-      lossLocationSubCategory: selectedConfig?.sectorType || '',
+      lossLocationSubCategory: selectedConfig?.sectorType ? [selectedConfig.sectorType] : [],
       lossLocationCustom: '',
     })
     router.push("/detect/step-1")
@@ -214,7 +234,7 @@ export default function Step0Page() {
                 <div className="p-5 rounded-2xl bg-[#2DE1FC]/5 border border-[#2DE1FC]/20">
                   <ConfidenceSlider 
                     value={confidence} 
-                    onChange={setConfidence} 
+                    onChange={handleConfidenceChange} 
                   />
                   
                   {/* AI策略提示 */}
@@ -233,14 +253,33 @@ export default function Step0Page() {
 
               {/* 下一步按钮 */}
               <div className="flex flex-col items-center gap-4 pt-2">
-                <button
-                  onClick={handleNext}
-                  disabled={!canProceed}
-                  className="btn-scifi-primary disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  {isUnsureMode ? '启动轨迹分析' : '锁定区域'}
-                  <ChevronRight className="w-5 h-5" />
-                </button>
+                {/* 主按钮容器 - 带hover提示 */}
+                <div className="relative group/btn">
+                  <button
+                    onClick={handleNext}
+                    disabled={!canProceed}
+                    className="btn-scifi-primary disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    {isUnsureMode ? '启动轨迹分析' : '锁定区域'}
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                  
+                  {/* 缺少必填项提示 - 仅在禁用时显示 */}
+                  {!canProceed && getMissingRequirement() && (
+                    <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-all duration-300 pointer-events-none z-50">
+                      <div className="px-4 py-2 bg-gradient-to-r from-amber-500/95 to-orange-500/95 text-white text-sm font-medium rounded-xl whitespace-nowrap shadow-[0_4px_20px_rgba(245,158,11,0.4)] backdrop-blur-sm border border-amber-400/30">
+                        <span className="flex items-center gap-2">
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                          </svg>
+                          {getMissingRequirement()}
+                        </span>
+                        {/* 箭头指向按钮 */}
+                        <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-gradient-to-br from-amber-500/95 to-orange-500/95 rotate-45 border-r border-b border-amber-400/30" />
+                      </div>
+                    </div>
+                  )}
+                </div>
                 
                 <Button
                   variant="ghost"

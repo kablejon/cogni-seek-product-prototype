@@ -2,18 +2,23 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useSearchStore } from "@/lib/store"
 
 export default function IntroPage() {
   const router = useRouter()
+  const { resetSession } = useSearchStore()
 
   useEffect(() => {
+    // 每次进入 intro 页面时，清空上一次的分析数据
+    resetSession()
+    
     // 18秒后自动跳转到下一步
     const timer = setTimeout(() => {
       router.push('/detect/step-0')
     }, 18000)
 
     return () => clearTimeout(timer)
-  }, [router])
+  }, [router, resetSession])
 
   return (
     <div className="cinematic-intro-page">

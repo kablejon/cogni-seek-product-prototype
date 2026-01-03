@@ -124,6 +124,17 @@ export default function Step4Page() {
   // 验证是否可以继续
   const canProceed = selectedMood && selectedActivities.length > 0
 
+  // 获取缺少的必填项提示（按优先级）
+  const getMissingRequirement = (): string | null => {
+    if (!selectedMood) {
+      return "请选择心理状态"
+    }
+    if (selectedActivities.length === 0) {
+      return "请选择至少一个身体动作"
+    }
+    return null
+  }
+
   const handleNext = () => {
     if (!canProceed) return
 
@@ -576,14 +587,33 @@ export default function Step4Page() {
 
           {/* 底部按钮 */}
           <div className="flex flex-col items-center gap-4 pt-6">
-            <button
-              onClick={handleNext}
-              disabled={!canProceed}
-              className="btn-scifi-primary disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              继续下一步
-              <ChevronRight className="w-5 h-5" />
-            </button>
+            {/* 主按钮容器 - 带hover提示 */}
+            <div className="relative group/btn">
+              <button
+                onClick={handleNext}
+                disabled={!canProceed}
+                className="btn-scifi-primary disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                继续下一步
+                <ChevronRight className="w-5 h-5" />
+              </button>
+              
+              {/* 缺少必填项提示 - 仅在禁用时显示 */}
+              {!canProceed && getMissingRequirement() && (
+                <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-all duration-300 pointer-events-none z-50">
+                  <div className="px-4 py-2 bg-gradient-to-r from-amber-500/95 to-orange-500/95 text-white text-sm font-medium rounded-xl whitespace-nowrap shadow-[0_4px_20px_rgba(245,158,11,0.4)] backdrop-blur-sm border border-amber-400/30">
+                    <span className="flex items-center gap-2">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      </svg>
+                      {getMissingRequirement()}
+                    </span>
+                    {/* 箭头指向按钮 */}
+                    <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-gradient-to-br from-amber-500/95 to-orange-500/95 rotate-45 border-r border-b border-amber-400/30" />
+                  </div>
+                </div>
+              )}
+            </div>
             
             <Button
               variant="ghost"
