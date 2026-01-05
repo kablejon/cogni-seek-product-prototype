@@ -126,6 +126,12 @@ export default function ReportPage() {
   const { session, resetSession } = useSearchStore()
   const [isPaid, setIsPaid] = useState(false)
   const [loadingPay, setLoadingPay] = useState(false)
+  const [caseId, setCaseId] = useState(0)
+  
+  // 客户端生成案件号，避免 Hydration 错误
+  useEffect(() => {
+    setCaseId(Math.floor(Math.random() * 10000))
+  }, [])
   
   // 获取动态内容
   const content = useMemo(() => generateAnalysis(session), [session])
@@ -140,12 +146,16 @@ export default function ReportPage() {
 
   const SceneIcon = currentScene.icon
 
-  // 寻回指数 (动态计算)
-  const recoveryIndex = useMemo(() => {
+  // 寻回指数 (初始值，避免 Hydration 错误)
+  const [recoveryIndex, setRecoveryIndex] = useState("85.0")
+  
+  // 客户端计算寻回指数
+  useEffect(() => {
     let base = 85
     if (session.lossLocationCategory === 'outdoor') base -= 12
-    return Math.max(45, Math.min(89.5, base + (Math.random() * 4 - 2))).toFixed(1)
-  }, [session])
+    const index = Math.max(45, Math.min(89.5, base + (Math.random() * 4 - 2))).toFixed(1)
+    setRecoveryIndex(index)
+  }, [session.lossLocationCategory])
 
   const handleUnlock = () => {
     setLoadingPay(true)
@@ -186,7 +196,7 @@ export default function ReportPage() {
         <div className="flex items-center gap-2">
            <div className="w-2 h-2 bg-cyan-500 rounded-full animate-pulse" />
            <div className="text-[10px] font-mono text-cyan-700 bg-blue-950/30 border border-blue-900 px-2 py-1 rounded">
-             CASE #{Math.floor(Math.random() * 10000)}
+             CASE #{caseId}
            </div>
         </div>
       </header>
