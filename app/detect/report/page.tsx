@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useRef } from "react"
 import { useRouter } from "next/navigation"
+import domtoimage from "dom-to-image-more"
 import { 
   Brain, 
   MapPin, 
@@ -19,7 +20,10 @@ import {
   Stethoscope,
   Waves,
   Search,
-  CheckCircle2
+  CheckCircle2,
+  Download,
+  Share2,
+  Home
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useSearchStore } from "@/lib/store"
@@ -127,12 +131,14 @@ export default function ReportPage() {
   const [isPaid, setIsPaid] = useState(false)
   const [loadingPay, setLoadingPay] = useState(false)
   const [caseId, setCaseId] = useState(0)
+  const [isGenerating, setIsGenerating] = useState(false)
+  const reportRef = useRef<HTMLDivElement>(null)
   
   // 客户端生成案件号，避免 Hydration 错误
   useEffect(() => {
     setCaseId(Math.floor(Math.random() * 10000))
   }, [])
-  
+
   // 获取动态内容
   const content = useMemo(() => generateAnalysis(session), [session])
 
@@ -170,8 +176,72 @@ export default function ReportPage() {
     router.push('/')
   }
 
+  // 生成完整报告图片（使用 dom-to-image-more）
+  const handleGeneratePoster = async () => {
+    setIsGenerating(true)
+    
+    try {
+      // 获取报告主内容区域
+      const reportElement = reportRef.current
+      if (!reportElement) {
+        throw new Error('报告元素未找到')
+      }
+
+      // 临时隐藏底部固定按钮区域
+      const footerElement = document.querySelector('[class*="fixed bottom-0"]') as HTMLElement
+      if (footerElement) {
+        footerElement.style.display = 'none'
+      }
+
+      // 使用 dom-to-image-more 生成 PNG
+      const dataUrl = await domtoimage.toPng(reportElement, {
+        quality: 1,
+        bgcolor: '#020617',
+        style: {
+          'transform': 'none',
+          'color-scheme': 'dark'
+        },
+        filter: (node: Node) => {
+          // 过滤掉可能导致问题的元素
+          if (node instanceof HTMLElement) {
+            const className = node.className || ''
+            // 跳过固定定位的底部按钮
+            if (typeof className === 'string' && className.includes('fixed') && className.includes('bottom-0')) {
+              return false
+            }
+          }
+          return true
+        }
+      })
+
+      // 恢复底部按钮
+      if (footerElement) {
+        footerElement.style.display = ''
+      }
+
+      // 下载图片
+      const link = document.createElement('a')
+      link.href = dataUrl
+      link.download = `CogniSeek-完整报告-CASE${caseId}.png`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      
+      console.log('✅ 完整报告图片生成成功！')
+    } catch (error) {
+      console.error('❌ 生成报告图片失败:', error)
+      // 如果 dom-to-image 也失败，提供打印方案
+      const usePrint = confirm(`图片生成失败。\n\n是否使用"打印"功能保存为 PDF？\n（在打印对话框中选择"另存为 PDF"）`)
+      if (usePrint) {
+        window.print()
+      }
+    } finally {
+      setIsGenerating(false)
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-[#020617] text-slate-200 font-mono selection:bg-cyan-500/30 selection:text-cyan-200 relative overflow-hidden flex flex-col">
+    <div ref={reportRef} className="min-h-screen bg-[#020617] text-slate-200 font-mono selection:bg-cyan-500/30 selection:text-cyan-200 relative overflow-hidden flex flex-col">
       
       {/* 背景：医用脉冲网格 */}
       <div className="absolute inset-0 pointer-events-none opacity-20" 
@@ -185,7 +255,7 @@ export default function ReportPage() {
 
       {/* --- Header: 医疗仪表盘风格 --- */}
       <header className="sticky top-0 z-50 bg-[#020617]/80 backdrop-blur-md border-b border-blue-900/30 px-6 py-4 flex justify-between items-center">
-        <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2">
           <div className="w-6 h-6 bg-cyan-950/50 border border-cyan-400 text-cyan-400 rounded flex items-center justify-center">
             <Activity className="w-3 h-3" />
           </div>
@@ -193,11 +263,20 @@ export default function ReportPage() {
             CogniSeek <span className="text-cyan-700">///</span> MED-SCAN
           </span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
            <div className="w-2 h-2 bg-cyan-500 rounded-full animate-pulse" />
            <div className="text-[10px] font-mono text-cyan-700 bg-blue-950/30 border border-blue-900 px-2 py-1 rounded">
              CASE #{caseId}
-           </div>
+          </div>
+           {/* 下载报告按钮 */}
+           <button 
+             onClick={handleGeneratePoster}
+             disabled={isGenerating}
+             className="p-2 rounded bg-cyan-950/50 border border-cyan-500/30 text-cyan-400 hover:bg-cyan-950 hover:border-cyan-400 transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
+             title={isGenerating ? "生成中..." : "下载报告图片"}
+           >
+             <Download className={`w-4 h-4 group-hover:scale-110 transition-transform ${isGenerating ? 'animate-bounce' : ''}`} />
+           </button>
         </div>
       </header>
 
@@ -214,7 +293,7 @@ export default function ReportPage() {
              <span className="text-slate-600">|</span> 
              <span>Recovery Potential Index</span>
           </div>
-
+          
           <div className="max-w-xs mx-auto mt-4 p-2 bg-blue-950/20 rounded border border-blue-900/30">
             <p className="text-[10px] text-slate-500 leading-relaxed scale-90">
               * AI 仅提供基于概率的线索指引，不保证 100% 找回。辅助服务，请理性消费。
@@ -299,22 +378,22 @@ export default function ReportPage() {
                <div className="flex justify-between items-center border-b border-indigo-500/10 pb-2">
                  <h3 className="font-bold text-sm text-indigo-100">环境物理扫描</h3>
                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-500/20">COMPLETED</span>
-               </div>
+              </div>
                <div className="grid grid-cols-2 gap-2 text-[10px] text-slate-400">
                   <div>复杂度: <span className="text-indigo-300">{content.envSummary.complexity}</span></div>
                   <div>伪装度: <span className="text-red-300">{content.envSummary.camouflage}</span></div>
-               </div>
+                        </div>
                <p className="text-xs text-slate-400 leading-relaxed">
                  {content.envSummary.desc}
-               </p>
-            </div>
-          </div>
-
+                          </p>
+                        </div>
+                      </div>
+                      
           {/* B. 心理学侧写 */}
           <div className="bg-[#0f172a]/40 p-4 rounded-lg border border-blue-800/20 backdrop-blur-sm flex gap-4 items-start group hover:border-blue-500/30 transition-colors">
             <div className="p-2 bg-blue-950/40 text-blue-400 border border-blue-500/20 rounded-md shrink-0">
               <Brain className="w-5 h-5" />
-            </div>
+                      </div>
             <div>
               <h3 className="font-bold text-sm text-blue-100">行为心理学分析</h3>
               <p className="text-xs text-slate-400 mt-2 leading-relaxed">
@@ -343,7 +422,7 @@ export default function ReportPage() {
                  <div className="flex items-center gap-2 mb-2 text-amber-500">
                    <CheckCircle2 className="w-4 h-4" />
                    <h4 className="text-xs font-bold">宏观区域复核 (Surface Layer)</h4>
-                 </div>
+                  </div>
                  <p className="text-[10px] text-slate-400 mb-3">
                    请确认以下常规区域是否已排查完毕：
                  </p>
@@ -357,8 +436,8 @@ export default function ReportPage() {
                  </ul>
                  <div className="p-2 bg-amber-900/20 rounded text-[10px] text-amber-400/80 leading-relaxed border-l-2 border-amber-500/50">
                    <strong>AI 判词：</strong> {content.macroReview}
-                 </div>
-               </div>
+                  </div>
+                </div>
              )}
 
              {/* [B] 付费破局区：微观死角 */}
@@ -390,7 +469,7 @@ export default function ReportPage() {
                         {action.desc}
                      </p>
                   </div>
-               </div>
+                </div>
              ))}
           </div>
         </section>
@@ -409,9 +488,9 @@ export default function ReportPage() {
                <div className="flex items-baseline gap-2">
                   <span className="text-lg font-bold text-white">$2.99</span>
                   <span className="text-xs text-slate-500 line-through decoration-slate-500">$9.99</span>
-               </div>
-             </div>
-             
+              </div>
+            </div>
+
              <Button 
                onClick={handleUnlock}
                size="lg"
@@ -424,25 +503,42 @@ export default function ReportPage() {
                ) : (
                  <span className="flex items-center gap-2">立即解锁方案 <Zap className="w-4 h-4 text-white fill-white"/></span>
                )}
-             </Button>
-          </div>
-        </div>
-      )}
+                  </Button>
+                </div>
+              </div>
+            )}
 
       {/* --- 付费后归档 --- */}
       {isPaid && (
-         <div className="fixed bottom-0 left-0 right-0 p-6 bg-[#020617] border-t border-blue-900/30 z-20">
+         <div className="fixed bottom-0 left-0 right-0 p-6 bg-[#020617]/95 backdrop-blur-md border-t border-blue-900/30 z-20">
             <div className="max-w-xl mx-auto flex flex-col gap-4">
               <p className="text-[10px] text-slate-500 text-center">
-                请严格执行上述战术动作。若仍未找到，建议生成协查海报。
+                请严格执行上述战术动作。若仍未找到，建议下载完整报告分享寻求帮助。
               </p>
-              <Button variant="outline" className="w-full h-11 border-blue-900/50 text-slate-400 bg-slate-900/50 hover:bg-slate-800 hover:text-slate-200" onClick={handleReturnHome}>
-                生成协查海报 / 返回首页
-              </Button>
-            </div>
+              <div className="grid grid-cols-2 gap-3">
+                {/* 左侧：下载完整报告 */}
+                <Button 
+                  onClick={handleGeneratePoster}
+                  disabled={isGenerating}
+                  className="h-11 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold border border-cyan-400/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Download className={`w-4 h-4 ${isGenerating ? 'animate-spin' : ''}`} />
+                  {isGenerating ? '生成中...' : '下载完整报告'}
+                </Button>
+                {/* 右侧：返回首页 */}
+            <Button 
+              variant="outline" 
+                  onClick={handleReturnHome}
+                  className="h-11 border-blue-900/50 text-slate-400 bg-slate-900/50 hover:bg-slate-800 hover:text-slate-200 flex items-center justify-center gap-2"
+            >
+                  <Home className="w-4 h-4" />
+                  返回首页
+            </Button>
+          </div>
+        </div>
          </div>
       )}
-
+        
       <style jsx global>{`
         @keyframes scan-slow {
           0% { transform: translateY(-100%); opacity: 0; }
