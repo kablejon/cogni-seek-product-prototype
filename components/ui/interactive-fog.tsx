@@ -200,7 +200,7 @@ export function InteractiveFog({
   return (
     <canvas
       ref={canvasRef}
-      className={`absolute inset-0 w-full h-full ${className}`}
+      className={`fixed inset-0 w-full h-full z-0 ${className}`}
       style={{ pointerEvents: "none" }}
     />
   )
