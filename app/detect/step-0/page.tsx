@@ -58,8 +58,8 @@ const SECTOR_OPTIONS = [
   },
   { 
     id: 'Unsure', 
-    label: '路途/不确定', 
-    labelEn: 'Unsure',
+    label: '迷雾模式 / 轨迹回溯', 
+    labelEn: 'Trajectory Mode',
     desc: '启动轨迹分析模式',
     icon: '❓',
     sectorType: 'trajectory_analysis',
@@ -133,16 +133,16 @@ export default function Step0Page() {
       <main className="container mx-auto px-4 py-8 md:py-12 relative z-10">
         <div className="w-full max-w-5xl mx-auto scifi-container p-6 md:p-10 space-y-8">
           
-          {/* 标题区 */}
+          {/* [修改] 标题区: 更具行动力 */}
           <div className="text-center space-y-3">
             <h1 className="text-2xl md:text-3xl font-bold text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">
-              确认丢失环境特征
+              锁定第一现场
             </h1>
             <p className="text-xs md:text-sm text-[#2DE1FC]/80 font-mono uppercase tracking-wider">
               Identify Environment Profile
             </p>
             <p className="text-sm md:text-base text-white/60">
-              请选定目标所在的物理场域，建立初始化空间模型
+              闭上眼回忆一下，你**最后一次**确信它在身边的位置是？
             </p>
           </div>
 

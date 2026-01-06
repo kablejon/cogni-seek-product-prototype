@@ -28,17 +28,17 @@ export default function ResultPage() {
   // 使用 AI 结果或备用结果
   const result = analysisResult || getDefaultAnalysisResult(session)
 
-  // 获取心理侧写诊断文案（根据 Step 5 动态变化）
+  // [修改] 心理侧写诊断文案: 更直接、更有冲击力
   const getPsychologicalDiagnosis = () => {
     const mood = session.mood || ''
     const itemColor = session.itemColor || ''
     
-    // 根据心理状态
+    // 根据心理状态 - 焦虑/急躁 -> 认知隧道
     if (mood.includes('焦虑') || mood.includes('急躁')) {
       return {
         icon: '🧠',
         title: '认知隧道效应（Tunnel Vision）',
-        content: '检测到你处于高压状态，大脑自动屏蔽了【非习惯性位置】的视觉信号。你不是没看到，而是大脑选择了"忽视"。',
+        content: '检测到你处于高压状态，大脑自动屏蔽了【非习惯性位置】的视觉信号。你不是没看到，而是大脑把你看到的画面"P"掉了。',
         color: '#FF9F0A'
       }
     }
@@ -53,11 +53,11 @@ export default function ResultPage() {
       }
     }
     
-    // 默认
+    // 默认 -> 记忆欺骗
     return {
       icon: '🧠',
-      title: '记忆干扰效应',
-      content: '在当前状态下，记忆系统可能出现"时序错位"。物品往往不在你"记得"的位置，而在【中断动作发生地】。',
+      title: '记忆欺骗效应',
+      content: '在自动驾驶模式下，记忆系统出现了"时序错位"。物品往往不在你"记得"的位置，而在你"动作中断"的那一瞬间。',
       color: '#10b981'
     }
   }
@@ -296,15 +296,16 @@ export default function ResultPage() {
                 <span className="text-sm font-bold text-[#FFD700]">限时优惠</span>
               </div>
 
-              <h2 className="text-2xl md:text-3xl font-bold">解锁精准位置，获取完整搜索方案</h2>
+              {/* [修改] 标题: 卖"盲区"和"指令" */}
+              <h2 className="text-2xl md:text-3xl font-bold">解锁"视觉盲区"坐标与战术搜寻指令</h2>
               
               <p className="text-muted-foreground max-w-2xl mx-auto">
-                包含：精确坐标、3D空间热力图、战术指令清单、兜底服务
+                告诉你**3个你绝对没看过的死角**，以及**5步逆向寻找法**。
               </p>
 
               <div className="flex items-baseline justify-center gap-2">
-                <span className="text-5xl font-bold text-[#2DE1FC]">¥2.99</span>
-                <span className="text-muted-foreground line-through">¥9.99</span>
+                <span className="text-5xl font-bold text-[#2DE1FC]">$2.99</span>
+                <span className="text-muted-foreground line-through">$9.99</span>
               </div>
 
               <Button 

@@ -29,15 +29,15 @@ import {
   PhotoIcon
 } from "@/components/ui/neon-activity-icons"
 
-// 心理状态选项（8个+自定义）- 霓虹光效配色
+// [修改] 心理状态选项: 引入 "CPU Load" 和 "视野带宽" 概念
 const MOOD_OPTIONS = [
-  { id: 'angry', label: '愤怒/生气', desc: '动作幅度大', IconComponent: AngryIcon, color: '#FF3B30', glowColor: 'rgba(255, 59, 48, 0.3)' },
-  { id: 'anxious', label: '焦虑/急忙', desc: '隧道视野', IconComponent: AnxiousIcon, color: '#FF9500', glowColor: 'rgba(255, 149, 0, 0.3)' },
-  { id: 'drowsy', label: '困倦/疲惫', desc: '警觉度低', IconComponent: SleepyIcon, color: '#0A84FF', glowColor: 'rgba(10, 132, 255, 0.3)' },
-  { id: 'tipsy', label: '微醺/醉酒', desc: '判断力下降', IconComponent: TipsyIcon, color: '#BF5AF2', glowColor: 'rgba(191, 90, 242, 0.3)' },
-  { id: 'excited', label: '兴奋/激动', desc: '多巴胺峰值', IconComponent: ExcitedIcon, color: '#FF2D55', glowColor: 'rgba(255, 45, 85, 0.3)' },
-  { id: 'calm', label: '平静/正常', desc: '正常基线', IconComponent: CalmIcon, color: '#64D2FF', glowColor: 'rgba(100, 210, 255, 0.3)' },
-  { id: 'confused', label: '困惑/迷茫', desc: '认知负荷高', IconComponent: ConfusedIcon, color: '#EBEBF5', glowColor: 'rgba(235, 235, 245, 0.3)' },
+  { id: 'angry', label: '过载：愤怒/急躁', desc: '视野收窄 80%', IconComponent: AngryIcon, color: '#FF3B30', glowColor: 'rgba(255, 59, 48, 0.3)' },
+  { id: 'anxious', label: '高压：焦虑/赶时间', desc: '记忆写入失败', IconComponent: AnxiousIcon, color: '#FF9500', glowColor: 'rgba(255, 149, 0, 0.3)' },
+  { id: 'drowsy', label: '低功耗：困倦/疲惫', desc: '感知模块离线', IconComponent: SleepyIcon, color: '#0A84FF', glowColor: 'rgba(10, 132, 255, 0.3)' },
+  { id: 'tipsy', label: '信号干扰：微醺', desc: '判断逻辑紊乱', IconComponent: TipsyIcon, color: '#BF5AF2', glowColor: 'rgba(191, 90, 242, 0.3)' },
+  { id: 'excited', label: '峰值：兴奋/激动', desc: '多巴胺覆盖记忆', IconComponent: ExcitedIcon, color: '#FF2D55', glowColor: 'rgba(255, 45, 85, 0.3)' },
+  { id: 'calm', label: '巡航：平静/习惯', desc: '自动驾驶模式', IconComponent: CalmIcon, color: '#64D2FF', glowColor: 'rgba(100, 210, 255, 0.3)' },
+  { id: 'confused', label: '宕机：困惑/迷茫', desc: '认知负荷过载', IconComponent: ConfusedIcon, color: '#EBEBF5', glowColor: 'rgba(235, 235, 245, 0.3)' },
 ]
 
 // 身体动作选项（多选）- 使用霓虹图标
@@ -162,23 +162,23 @@ export default function Step4Page() {
       <main className="container mx-auto px-4 py-8 md:py-12 relative z-10">
         <div className="w-full max-w-5xl mx-auto scifi-container p-6 md:p-10 space-y-8">
           
-          {/* 标题区 */}
+          {/* [修改] 标题区: 潜意识还原 */}
           <div className="text-center space-y-2">
-            <h1 className="text-2xl md:text-3xl font-bold">状态还原</h1>
+            <h1 className="text-2xl md:text-3xl font-bold">潜意识还原</h1>
             <p className="text-base md:text-lg text-white/70">
-              回想<span className="text-[var(--cyber-green)] font-semibold">当时的心理状态</span>和<span className="text-[var(--cyber-green)] font-semibold">行为模式</span>
+              我们需要分析你当时的<span className="text-[var(--cyber-green)] font-semibold">"大脑带宽"</span>占用情况
             </p>
           </div>
 
-          {/* ============ 第一板块：心理能量场 ============ */}
+          {/* [修改] 第一板块：大脑负载状态 (CPU Load) ============ */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <div className="relative">
                 <Brain className="w-5 h-5" style={{ color: 'var(--holo-blue)' }} />
                 <div className="absolute inset-0 animate-pulse-wave rounded-full" />
               </div>
-              <h2 className="font-bold text-base md:text-lg">1. 心理能量场</h2>
-              <span className="text-xs text-white/50">决定视野宽度</span>
+              <h2 className="font-bold text-base md:text-lg">1. 大脑负载状态 (CPU Load)</h2>
+              <span className="text-xs text-white/50">决定了你当时的"视野带宽"</span>
               <span className="text-destructive ml-1">*</span>
             </div>
 
@@ -314,15 +314,15 @@ export default function Step4Page() {
             </div>
           </div>
 
-          {/* ============ 第二板块：身体动态流 ============ */}
+          {/* [修改] 第二板块：肢体行为惯性 (Physical Inertia) ============ */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <div className="relative">
                 <Radio className="w-5 h-5" style={{ color: 'var(--holo-blue)' }} />
                 <div className="absolute inset-0 animate-pulse-wave rounded-full" />
               </div>
-              <h2 className="font-bold text-base md:text-lg">2. 身体动态流</h2>
-              <span className="text-xs text-white/50">决定手在哪里（可多选）</span>
+              <h2 className="font-bold text-base md:text-lg">2. 肢体行为惯性 (Physical Inertia)</h2>
+              <span className="text-xs text-white/50">还原无意识的肌肉记忆（可多选）</span>
               <span className="text-destructive ml-1">*</span>
             </div>
 
@@ -419,7 +419,7 @@ export default function Step4Page() {
             </div>
           </div>
 
-          {/* ============ 第三板块：注意力干扰源 ============ */}
+          {/* [保留标题+修改副标题] 第三板块：注意力干扰源 ============ */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <div className="relative">
@@ -427,7 +427,7 @@ export default function Step4Page() {
                 <div className="absolute inset-0 animate-pulse-wave rounded-full" />
               </div>
               <h2 className="font-bold text-base md:text-lg">3. 注意力干扰源</h2>
-              <span className="text-xs text-white/50">决定记忆断片原因</span>
+              <span className="text-xs text-white/50">是什么打断了你的记忆录入？</span>
             </div>
 
             {/* 警示级黑玻璃容器 */}

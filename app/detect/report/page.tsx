@@ -81,14 +81,14 @@ const generateAnalysis = (session: any) => {
     desc: `扫描显示 ${location === 'vehicle' ? '车内' : '该区域'} 存在大量视线死角。${item} 的材质极易与环境背景发生'视觉融合'。`
   }
 
-  // B. 心理侧写 (Psychological Profile) - 解释为什么找不到
+  // [修改] 心理侧写: 更温情
   let psychology = {
     title: "非注意盲视 (Inattentional Blindness)",
-    content: "别自责。在高压焦虑下，你的瞳孔收缩，大脑视觉皮层自动屏蔽了边缘信号。东西就在你手边，只是被你的大脑'隐形'了。深呼吸，信我一次。",
+    content: "别自责。在高压焦虑下，你的瞳孔收缩，大脑视觉皮层自动屏蔽了边缘信号。东西就在你手边，只是被你的大脑'隐形'了。深呼吸，按照下面的指令做，我们能找到。",
     tag: "应激性视野狭窄"
   }
   
-  if (mood === 'calm') {
+  if (mood === 'calm' || mood.includes('巡航') || mood.includes('平静')) {
     psychology = {
       title: "惯性思维陷阱 (Inertial Thinking)",
       content: `你太熟悉这里了。大脑开启了'自动驾驶模式'，导致你对${item}的反常位置视而不见。我们必须用'陌生人视角'来打破这种惯性。`,
@@ -100,8 +100,7 @@ const generateAnalysis = (session: any) => {
   // 模拟 AI 判断：常规地方大概率没有
   const macroReview = `常规平面扫描完毕。上述区域均未发现目标？这验证了我的推测：物品受外力或无意识动作影响，已滑入'结构性夹角'。`
 
-  // D. 微观死角 (Micro Tactics) - 付费版解药
-  // 必须是反常识的、具体的动作指令
+  // [修改] 微观死角 (Micro Tactics) - 具体的、反直觉的动作
   let actions = []
   
   if (location === 'vehicle') {
@@ -115,7 +114,7 @@ const generateAnalysis = (session: any) => {
   } else {
     actions = [
       { title: "阴影侧向照明", desc: `关掉主灯。开启手机手电筒，贴着地面平射。寻找${item}投下的拉长阴影。` },
-      { title: "盲区触觉扫描", desc: "伸手探入沙发/床垫缝隙深处。勿用眼看，依靠触觉寻找异物感。" },
+      { title: "触觉盲区扫描", desc: "视觉会欺骗你。闭上眼，将手伸入沙发/床垫缝隙深处至少10cm。依靠触觉寻找异物感。" },
       { title: "高位视野盲区", desc: "根据'灯下黑'原理，检查齐腰高的杂物堆顶端，或视线平齐的置物架边缘。" },
       { title: "织物褶皱复核", desc: "抖动被褥或外套。轻薄物品极易被织物褶皱包裹而隐形。" },
       { title: "第三方视角", desc: "邀请一位完全不知情的朋友，站在门口重新扫视一遍房间。" }

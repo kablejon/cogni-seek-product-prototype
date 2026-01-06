@@ -17,3 +17,4 @@ declare module 'dom-to-image-more' {
   export function toSvg(node: Node, options?: Options): Promise<string>
 }
 
+

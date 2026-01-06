@@ -187,7 +187,7 @@ export default function Home() {
             </h1>
             
             <p className="text-lg text-slate-400 max-w-xl mx-auto md:mx-0 leading-relaxed">
-              它们只是"隐形"了。CogniSeek 利用<strong className="text-slate-200">行为心理学</strong>与<strong className="text-slate-200">环境概率论</strong>，在 3 分钟内破解你的认知盲区，找回那些"明明就在手边"的东西。
+              它只是躲进了你的<strong className="text-slate-200">"认知盲区"</strong>。CogniSeek 就像你的**数字侦探**，利用<strong className="text-slate-200">行为心理学</strong>与<strong className="text-slate-200">环境概率论</strong>，在 3 分钟内帮你找回那些"明明就在手边"的东西。
             </p>
 
             <div className="space-y-4">
@@ -203,9 +203,9 @@ export default function Home() {
                   <span>隐私加密 · 无需注册</span>
                 </div>
               </div>
-              {/* [新增] 首屏风险提示 */}
+              {/* [修改] 软化免责声明，强调系统价值 */}
               <p className="text-[10px] text-slate-600 md:text-left">
-                * 免责声明：本服务基于概率模型提供辅助建议，受环境与记忆偏差影响，不承诺 100% 找回。
+                * 系统基于概率模型提供**搜寻策略**。我们无法改变物品被盗等物理事实，但能帮你排除 90% 的记忆干扰。
               </p>
             </div>
           </div>
@@ -233,7 +233,7 @@ export default function Home() {
             <div className="grid md:grid-cols-3 gap-8">
               {[
                 { icon: EyeOff, color: "text-purple-400", bg: "bg-purple-500/10", title: "视觉收窄", desc: "焦虑状态下，人的视野会物理性收窄 40%。物品就在视网膜上，但大脑拒绝处理。" },
-                { icon: Smartphone, color: "text-red-400", bg: "bg-red-500/10", title: "认知劫持", desc: "如果你当时在看手机或打电话，你的海马体根本没有录入'放下物品'的动作。" },
+                { icon: Smartphone, color: "text-red-400", bg: "bg-red-500/10", title: "认知断片", desc: "如果你当时在看手机或打电话，你的大脑根本没有点击'保存'按钮。我们帮你恢复数据。" },
                 { icon: Brain, color: "text-cyan-400", bg: "bg-cyan-500/10", title: "记忆篡改", desc: "你会把'上周把钥匙放在桌上'的记忆，错误地嫁接到今天。这是大脑的节能机制。" }
               ].map((item, i) => (
                 <div key={i} className="bg-slate-900/30 backdrop-blur-md border border-white/10 p-8 rounded-2xl hover:border-white/20 transition-colors">
@@ -371,13 +371,13 @@ export default function Home() {
                     </DialogTitle>
                   </DialogHeader>
                   <ScrollArea className="h-[300px] pr-4 text-sm leading-relaxed space-y-4 text-slate-300">
-                    {/* 核心免责声明 */}
-                    <div className="p-3 bg-orange-500/10 border border-orange-500/20 rounded mb-4 text-orange-300 text-xs">
-                      <strong className="flex items-center gap-2 text-orange-400 mb-1 text-sm"><AlertTriangle className="w-4 h-4"/> 风险提示</strong>
-                      本系统为基于 AI 概率模型的辅助工具，受限于用户记忆偏差及环境不可控因素（如物品被盗），我们<strong>不承诺 100% 找回物品</strong>，也不对遗失物品造成的损失承担责任。
+                    {/* [修改] 核心免责声明: 增加"外置大脑"概念 */}
+                    <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded mb-4 text-blue-300 text-xs">
+                      <strong className="flex items-center gap-2 text-blue-400 mb-1 text-sm"><Brain className="w-4 h-4"/> 这是一个"外置大脑"</strong>
+                      CogniSeek 无法通过魔法让物品凭空出现。我们的价值在于：在你慌乱得像无头苍蝇时，提供一份**绝对冷静、符合逻辑的排查清单**。按照概率论行动，总比盲目寻找效率高 10 倍。
                     </div>
-                    <p><strong>1. 角色定义:</strong><br/>CogniSeek 是您的战术辅助系统，而非魔法。您是"现场探员"，AI 是"指挥部"。我们提供高概率坐标，您负责执行物理搜寻。</p>
-                    <p><strong>2. 服务性质:</strong><br/>付费报告解锁的是"深度时空分析"和"精确物理坐标"的知识服务。一旦生成报告，即视为服务交付完成。因"未找到物品"而发起的退款申请将不被支持，因为算法已完成了其分析工作。</p>
+                    <p><strong>1. 角色定义:</strong><br/>CogniSeek 是您的战术辅助系统。您是"现场探员"，AI 是"指挥部"。我们提供高概率盲区坐标，您负责执行物理搜寻。</p>
+                    <p><strong>2. 知识服务性质:</strong><br/>付费报告解锁的是"思维盲区"和"战术指令"。这属于数字内容服务，一旦生成报告，即视为服务交付完成。如同医生问诊，我们提供最优方案，助您对抗遗忘。</p>
                   </ScrollArea>
                 </DialogContent>
               </Dialog>
