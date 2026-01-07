@@ -3,110 +3,13 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { ChevronRight, ChevronLeft, Zap, Sun, Moon, Calendar, Check } from "lucide-react"
+import { ChevronRight, ChevronLeft, Check } from "lucide-react"
 import { Header } from "@/components/shared/header"
 import { useSearchStore } from "@/lib/store"
 import { InteractiveFog } from "@/components/ui/interactive-fog"
+import { MACRO_TIME_OPTIONS, LIGHT_PERIODS } from "@/lib/config/time"
 
-// 宏观时间选择（4个大卡片）
-const MACRO_TIME_OPTIONS = [
-  { 
-    id: 'just_now', 
-    label: '刚刚', 
-    description: '1小时内',
-    icon: '⚡',
-    IconComponent: Zap,
-    memoryScore: '极高',
-    needsDetail: false,
-    needsCustomTime: false,
-  },
-  { 
-    id: 'today', 
-    label: '今天', 
-    description: '24小时内',
-    icon: '☀️',
-    IconComponent: Sun,
-    memoryScore: '高',
-    needsDetail: true,
-    needsCustomTime: false,
-  },
-  { 
-    id: 'yesterday', 
-    label: '昨天', 
-    description: '24-48小时',
-    icon: '🌙',
-    IconComponent: Moon,
-    memoryScore: '中等',
-    needsDetail: true,
-    needsCustomTime: false,
-  },
-  { 
-    id: 'earlier', 
-    label: '更早/自定义', 
-    description: '超过48小时',
-    icon: '📅',
-    IconComponent: Calendar,
-    memoryScore: '低',
-    needsDetail: false,
-    needsCustomTime: true,
-  },
-]
-
-// 光线/时段选择（微观）- 氛围感升级
-const LIGHT_PERIODS = [
-  { 
-    id: 'dawn_morning', 
-    label: '凌晨/上午', 
-    time: '06:00-11:00',
-    icon: '🌅',
-    iconName: 'Sunrise',
-    // 晨曦蓝到浅白
-    atmosphereGradient: 'linear-gradient(135deg, rgba(147, 197, 253, 0.15) 0%, rgba(255, 255, 255, 0.08) 100%)',
-    selectedBorder: '#93C5FD',
-    glowColor: 'rgba(147, 197, 253, 0.4)',
-    aiInsight: '☀️ AI 分析：晨间光线清冷明亮，视野清晰，物品若在开阔区域应较易发现。',
-    visualHint: '清冷、清晰',
-  },
-  { 
-    id: 'noon_afternoon', 
-    label: '中午/下午', 
-    time: '11:00-17:00',
-    icon: '☀️',
-    iconName: 'Sun',
-    // 暖金黄
-    atmosphereGradient: 'linear-gradient(135deg, rgba(251, 191, 36, 0.2) 0%, rgba(252, 211, 77, 0.1) 100%)',
-    selectedBorder: '#FCD34D',
-    glowColor: 'rgba(251, 191, 36, 0.5)',
-    aiInsight: '☀️ AI 分析：强光环境下，物品容易被阴影遮挡，建议检查物体背光面及阴影区域。',
-    visualHint: '强烈、明亮',
-  },
-  { 
-    id: 'dusk', 
-    label: '黄昏/傍晚', 
-    time: '17:00-19:00',
-    icon: '🌇',
-    iconName: 'CloudSun',
-    // 晚霞紫到橙色
-    atmosphereGradient: 'linear-gradient(135deg, rgba(167, 139, 250, 0.18) 0%, rgba(251, 146, 60, 0.15) 50%, rgba(249, 115, 22, 0.12) 100%)',
-    selectedBorder: '#FB923C',
-    glowColor: 'rgba(249, 115, 22, 0.5)',
-    aiInsight: '🌇 AI 分析：光线快速变化期，人眼适应度下降，物品极易滑入视觉盲区，重点排查过渡区域。',
-    visualHint: '昏暗、复杂',
-  },
-  { 
-    id: 'night', 
-    label: '晚上/深夜', 
-    time: '19:00-06:00',
-    icon: '🌑',
-    iconName: 'Moon',
-    // 深邃蓝黑
-    atmosphereGradient: 'linear-gradient(135deg, rgba(30, 58, 138, 0.25) 0%, rgba(17, 24, 39, 0.2) 100%)',
-    selectedBorder: '#3B82F6',
-    glowColor: 'rgba(59, 130, 246, 0.5)',
-    aiInsight: '🌑 AI 分析：可见度低，若当时未开灯，请重点排查脚下及低处缝隙、家具下方等区域。',
-    visualHint: '视野受限',
-  },
-]
+// ✅ 时间配置已移至 lib/config/time.ts
 
 export default function Step2Page() {
   const router = useRouter()
@@ -114,8 +17,7 @@ export default function Step2Page() {
   
   const [selectedMacroTime, setSelectedMacroTime] = useState<string>('')
   const [selectedLightPeriod, setSelectedLightPeriod] = useState<string>('')
-  const [isTimeUncertain, setIsTimeUncertain] = useState(false) // 改为"不确定"开关
-  const [fuzzyTimeMode, setFuzzyTimeMode] = useState(false) // 新增：模糊时间模式
+  const [fuzzyTimeMode, setFuzzyTimeMode] = useState(false) // "我对具体时间点不确定"开关
   const [customDate, setCustomDate] = useState('')
   const [customTime, setCustomTime] = useState('')
 
@@ -142,10 +44,10 @@ export default function Step2Page() {
       return "请选择时间范围"
     }
     if (needsLightDetail && !selectedLightPeriod && !fuzzyTimeMode) {
-      return "请选择光线时段或开启广域搜索"
+      return "请选择光线时段或开启\"时间不确定\"开关"
     }
-    if (needsCustomTime && !customDate) {
-      return "请选择具体日期"
+    if (needsCustomTime && !customDate && !fuzzyTimeMode) {
+      return "请选择具体日期或开启\"时间不确定\"开关"
     }
     return null
   }
@@ -167,10 +69,10 @@ export default function Step2Page() {
     let aiSearchMode = ''
     
     if (needsCustomTime && customDate) {
-      // 更早/自定义模式
+      // 更早/自定义模式（有填写日期）
       if (customTime) {
         timeDescription = `${customDate} ${customTime}`
-        if (isTimeUncertain) {
+        if (fuzzyTimeMode) {
           aiSearchMode = '模糊时间模式 - 分析全天光线和行为模式'
           lightContext = '全天综合分析'
         } else {
@@ -182,6 +84,11 @@ export default function Step2Page() {
         aiSearchMode = '日期模式 - 分析全天光线和行为模式'
         lightContext = '全天综合分析'
       }
+    } else if (fuzzyTimeMode && needsCustomTime) {
+      // 更早/自定义模式 + 开启了"时间不确定"开关（无需填写日期）
+      timeDescription = '更早时间 (时间不确定)'
+      lightContext = '全时段综合分析'
+      aiSearchMode = '模糊时间模式 - AI将分析更早时期的行为轨迹'
     } else if (fuzzyTimeMode) {
       // 模糊时间模式
       const macroLabel = selectedMacroConfig?.label || ''
@@ -203,8 +110,9 @@ export default function Step2Page() {
     }
 
     updateSession({
-      lastSeenTime: timeDescription,
-      lastSeenDate: customDate || new Date().toISOString().split('T')[0],
+      lossTime: timeDescription,
+      lossTimeRange: selectedMacroTime,
+      preciseTime: selectedLightPeriod || customDate || '',
     })
     
     router.push('/detect/step-3')
@@ -459,16 +367,16 @@ export default function Step2Page() {
                 <div className="flex flex-col gap-1">
                   <span className="text-sm font-medium text-white">我对具体时间点不确定</span>
                   <span className="text-xs text-white/60">
-                    {isTimeUncertain 
+                    {fuzzyTimeMode 
                       ? '💭 没关系，我们将分析全天的光线变化与行为模式' 
                       : '🎯 已锁定时间点，AI将分析该时间后方3小时内的路径'}
                   </span>
                 </div>
                 <button
-                  onClick={() => setIsTimeUncertain(!isTimeUncertain)}
+                  onClick={() => setFuzzyTimeMode(!fuzzyTimeMode)}
                   className={`
                     relative w-14 h-7 rounded-full transition-all duration-300
-                    ${isTimeUncertain 
+                    ${fuzzyTimeMode 
                       ? 'bg-[var(--cyber-green)]' 
                       : 'bg-white/20'}
                   `}
@@ -477,7 +385,7 @@ export default function Step2Page() {
                     className={`
                       absolute top-1 w-5 h-5 bg-white rounded-full shadow-lg
                       transition-all duration-300
-                      ${isTimeUncertain ? 'left-8' : 'left-1'}
+                      ${fuzzyTimeMode ? 'left-8' : 'left-1'}
                     `}
                   />
                 </button>
@@ -506,7 +414,7 @@ export default function Step2Page() {
                   <p className="relative text-sm text-white/90 leading-relaxed flex-1">
                     <span className="font-medium">时空分析：</span>
                     {customTime 
-                      ? `基于 ${customDate} ${customTime}，${isTimeUncertain ? 'AI将分析全天的光线变化和行为轨迹' : 'AI将重点排查该时间点后3小时内的视觉盲区'}` 
+                      ? `基于 ${customDate} ${customTime}，${fuzzyTimeMode ? 'AI将分析全天的光线变化和行为轨迹' : 'AI将重点排查该时间点后3小时内的视觉盲区'}` 
                       : `基于 ${customDate}，AI将分析全天的光线变化和行为模式`
                     }
                   </p>

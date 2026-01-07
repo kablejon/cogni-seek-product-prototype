@@ -4,9 +4,9 @@
 
 export interface ItemCategory {
   id: string
-  name: string
+  label: string
   icon: string
-  items: string[]
+  items: Array<{ id: string; label: string }>
 }
 
 export interface LocationCategory {

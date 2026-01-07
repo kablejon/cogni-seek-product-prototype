@@ -19,6 +19,7 @@ import {
 } from "lucide-react"
 import { useSearchStore } from "@/lib/store"
 import { itemCategories } from "@/lib/data"
+import { analyzeWithAI } from "@/lib/ai-service"
 
 // ============================================================================
 // 1. 符号化数字孪生配置 (Symbolic Digital Twin Config)
@@ -89,19 +90,23 @@ const LOGS = [
 
 export default function LoadingPage() {
   const router = useRouter()
-  const { session } = useSearchStore()
+  const { session, setAnalysisResult, setAnalysisError } = useSearchStore()
   
   const [progress, setProgress] = useState(0)
   const [logIndex, setLogIndex] = useState(0)
   const [phase, setPhase] = useState(1) // 1:载入, 2:扫描, 3:锁定
+  const [apiCallCompleted, setApiCallCompleted] = useState(false)
 
   // 获取物品名称
   const itemName = useMemo(() => {
-    if (session.itemCustomName) return session.itemCustomName
+    // ✅ 直接使用 session.itemName（来自 step-1 的保存）
+    if (session.itemName) return session.itemName.toUpperCase()
+    
+    // 备用：从 itemCategory 中查找
     const category = itemCategories.find(c => c.id === session.itemCategory)
-    const item = category?.items.find(i => i.id === session.itemType)
+    const item = category?.items.find(i => i.id === session.itemName)
     return (item?.label || 'UNKNOWN_TARGET').toUpperCase()
-  }, [session])
+  }, [session.itemName, session.itemCategory])
 
   // 智能场景匹配
   const currentScene = useMemo(() => {
@@ -129,35 +134,115 @@ export default function LoadingPage() {
   const MainIcon = currentScene.icon
   const SubIcon = currentScene.subIcon
 
-  // 动画计时器 (6.5秒)
+  // ============================================================
+  // 🧠 真实的 AI 分析调用（核心功能）
+  // ============================================================
   useEffect(() => {
-    const duration = 6500 
+    let isMounted = true;
+
+    async function performAnalysis() {
+      try {
+        console.log('╔══════════════════════════════════════════════════════════╗');
+        console.log('║  🚀 Loading 页面: 开始 AI 分析                           ║');
+        console.log('╚══════════════════════════════════════════════════════════╝');
+        console.log('📋 用户选择的物品:', itemName);
+        console.log('📍 丢失位置:', session.lossLocationCategory);
+        console.log('🧠 心情状态:', session.userMood);
+        console.log('⏰ 丢失时间:', session.lossTime);
+        
+        const result = await analyzeWithAI(session);
+        
+        if (isMounted) {
+          console.log('╔══════════════════════════════════════════════════════════╗');
+          console.log('║  ✅ AI 分析成功! 数据已保存到 Store                      ║');
+          console.log('╚══════════════════════════════════════════════════════════╝');
+          console.log('📊 AI 返回的概率:', result.probability);
+          console.log('📝 心理分析预览:', result.behaviorAnalysis?.substring(0, 50) + '...');
+          console.log('🎯 行动清单数量:', result.checklist?.length);
+          
+          setAnalysisResult(result);
+          setApiCallCompleted(true);
+        }
+      } catch (error) {
+        console.error('╔══════════════════════════════════════════════════════════╗');
+        console.error('║  ❌ AI 分析失败                                          ║');
+        console.error('╚══════════════════════════════════════════════════════════╝');
+        console.error('错误详情:', error);
+        console.warn('⚠️  将使用备用默认分析结果');
+        
+        if (isMounted) {
+          const errorMessage = error instanceof Error ? error.message : '分析失败，请重试';
+          setAnalysisError(errorMessage);
+          setApiCallCompleted(true); // 即使失败也允许继续，report 页面会显示默认数据
+        }
+      }
+    }
+
+    performAnalysis();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [session, setAnalysisResult, setAnalysisError, itemName]);
+
+  // ============================================================
+  // 🎬 平滑进度条 - 智能等待 API，永不回退
+  // ============================================================
+  useEffect(() => {
     const interval = 50
-    const steps = duration / interval
-    let currentStep = 0
+    let currentProgress = 0
 
     const timer = setInterval(() => {
-      currentStep++
-      const p = Math.min(100, (currentStep / steps) * 100)
-      setProgress(p)
+      setProgress((prev) => {
+        // 📊 智能速度控制
+        let increment: number
+        
+        if (prev < 85) {
+          // 阶段1 (0-85%): 正常速度 (约 8 秒)
+          increment = 0.53  // 85% / (8000ms / 50ms) = 0.53
+        } else if (prev < 95) {
+          // 阶段2 (85-95%): 减速等待 API
+          if (apiCallCompleted) {
+            // API 已完成，快速推进
+            increment = 2.0
+          } else {
+            // API 未完成，极慢速度缓动
+            increment = 0.1
+          }
+        } else {
+          // 阶段3 (95-100%): 只有 API 完成才能到 100%
+          if (apiCallCompleted) {
+            increment = 1.0  // 快速完成最后 5%
+          } else {
+            increment = 0  // 停在 95-99%，永不到 100%
+          }
+        }
 
-      // 阶段控制
-      if (p < 20) setPhase(1) // 初始化
-      else if (p < 80) setPhase(2) // 扫描中
-      else setPhase(3) // 锁定
+        const newProgress = Math.min(100, prev + increment)
+        currentProgress = newProgress
 
-      // 日志控制
-      const logIdx = Math.floor((p / 100) * LOGS.length)
-      setLogIndex(Math.min(logIdx, LOGS.length - 1))
+        // 阶段控制
+        if (newProgress < 20) setPhase(1) // 初始化
+        else if (newProgress < 80) setPhase(2) // 扫描中
+        else setPhase(3) // 锁定
 
-      if (p >= 100) {
-        clearInterval(timer)
-        setTimeout(() => router.push("/detect/report"), 600)
-      }
+        // 日志控制
+        const logIdx = Math.floor((newProgress / 100) * LOGS.length)
+        setLogIndex(Math.min(logIdx, LOGS.length - 1))
+
+        // ✅ 到达 100% 且 API 完成，准备跳转
+        if (newProgress >= 100 && apiCallCompleted) {
+          clearInterval(timer)
+          console.log('🎬 平滑动画完成，准备跳转到 Report 页面');
+          setTimeout(() => router.push("/detect/report"), 600)
+        }
+
+        return newProgress
+      })
     }, interval)
 
     return () => clearInterval(timer)
-  }, [router])
+  }, [router, apiCallCompleted])
 
   return (
     <div className="min-h-screen bg-[#050A14] text-slate-300 font-mono flex flex-col items-center justify-center relative overflow-hidden">

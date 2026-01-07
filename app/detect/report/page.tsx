@@ -27,6 +27,7 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useSearchStore } from "@/lib/store"
+import { getDefaultAnalysisResult } from "@/lib/ai-service"
 
 // --- 1. 场景地图配置 (全息线索地图) ---
 const SCENE_CONFIG = {
@@ -60,8 +61,9 @@ const SCENE_CONFIG = {
   }
 }
 
-// --- 2. 动态分析引擎 (模拟 LLM 的输出) ---
-// 真实开发时，这里会调用 API，传入 Prompt，获取 JSON
+// --- 2. 动态分析引擎 (已废弃 - 现在使用真实 AI 分析) ---
+// ⚠️ 此函数已被替换为真实的 AI API 调用，保留仅供参考
+/*
 const generateAnalysis = (session: any) => {
   const item = session.itemCustomName || '物品'
   const location = session.lossLocationCategory || 'home'
@@ -123,10 +125,11 @@ const generateAnalysis = (session: any) => {
 
   return { envSummary, psychology, macroReview, actions }
 }
+*/
 
 export default function ReportPage() {
   const router = useRouter()
-  const { session, resetSession } = useSearchStore()
+  const { session, resetSession, analysisResult, analysisError } = useSearchStore()
   const [isPaid, setIsPaid] = useState(false)
   const [loadingPay, setLoadingPay] = useState(false)
   const [caseId, setCaseId] = useState(0)
@@ -138,8 +141,79 @@ export default function ReportPage() {
     setCaseId(Math.floor(Math.random() * 10000))
   }, [])
 
-  // 获取动态内容
-  const content = useMemo(() => generateAnalysis(session), [session])
+  // ============================================================
+  // 🧠 使用 AI 分析结果（真实数据）或备用数据
+  // ============================================================
+  const aiResult = useMemo(() => {
+    console.log('╔══════════════════════════════════════════════════════════╗');
+    console.log('║  📄 Report 页面: 数据源检查                              ║');
+    console.log('╚══════════════════════════════════════════════════════════╝');
+    
+    if (analysisResult) {
+      console.log('✅ 使用真实 AI 分析结果');
+      console.log('📊 概率:', analysisResult.probability);
+      console.log('📝 心理分析:', analysisResult.behaviorAnalysis?.substring(0, 80) + '...');
+      console.log('🎯 行动清单:', analysisResult.checklist?.length, '项');
+      return analysisResult;
+    }
+    
+    console.warn('⚠️  analysisResult 为空，使用备用默认结果');
+    console.log('📋 Session 数据:', {
+      itemName: session.itemCustomName || session.itemName,
+      location: session.lossLocationCategory,
+      mood: session.userMood
+    });
+    
+    const defaultResult = getDefaultAnalysisResult(session);
+    console.log('🔄 生成的默认结果预览:', {
+      probability: defaultResult.probability,
+      behaviorAnalysisLength: defaultResult.behaviorAnalysis?.length,
+      checklistLength: defaultResult.checklist?.length
+    });
+    
+    return defaultResult;
+  }, [analysisResult, session]);
+
+  // 转换 AI 结果为原有的 content 格式以兼容现有 UI
+  const content = useMemo(() => {
+    const item = session.itemName || '物品';  // ✅ 修复：只使用 itemName
+    const location = session.lossLocationCategory || 'home';
+    
+    console.log('🔄 转换 AI 数据为 UI 格式...');
+    console.log('📦 物品:', item);
+    console.log('📍 位置:', location);
+    
+    const transformedContent = {
+      // 使用 AI 的心理分析，转换为原格式
+      psychology: {
+        title: "认知盲区分析",
+        content: aiResult.behaviorAnalysis || "基于认知心理学分析...",
+        tag: aiResult.probabilityLevel
+      },
+      // 环境综述
+      envSummary: {
+        complexity: aiResult.probabilityLevel === 'High' ? "高 (HIGH)" : "中 (MEDIUM)",
+        light: "根据场景分析",
+        camouflage: aiResult.probabilityLevel === 'High' ? "高 (HIGH)" : "中 (MEDIUM)",
+        desc: aiResult.environmentAnalysis || "环境分析中..."
+      },
+      // 宏观验证
+      macroReview: aiResult.summary || "常规区域扫描完毕...",
+      // 战术动作清单（使用 AI 的 checklist）
+      actions: (aiResult.checklist || []).slice(0, 5).map((item, index) => ({
+        title: `行动 ${index + 1}`,
+        desc: item
+      }))
+    };
+    
+    console.log('✅ UI 内容已生成:');
+    console.log('  - 心理分析长度:', transformedContent.psychology.content.length);
+    console.log('  - 环境分析长度:', transformedContent.envSummary.desc.length);
+    console.log('  - 行动数量:', transformedContent.actions.length);
+    console.log('  - 行动 1:', transformedContent.actions[0]?.desc?.substring(0, 50) + '...');
+    
+    return transformedContent;
+  }, [aiResult, session]);
 
   // 获取当前场景配置
   const currentScene = useMemo(() => {
@@ -151,16 +225,31 @@ export default function ReportPage() {
 
   const SceneIcon = currentScene.icon
 
-  // 寻回指数 (初始值，避免 Hydration 错误)
+  // ============================================================
+  // 🎯 动态生成 macroZones（使用 AI 的 basicSearchPoints）
+  // ============================================================
+  const dynamicMacroZones = useMemo(() => {
+    const baseZones = currentScene.macroZones;
+    const basicPoints = aiResult.basicSearchPoints || [];
+    
+    // 使用原有的位置坐标，但替换为 AI 生成的标签
+    return baseZones.map((zone, index) => ({
+      t: zone.t,
+      l: zone.l,
+      label: basicPoints[index] || zone.label // 使用 AI 内容，如果没有则回退到原标签
+    }));
+  }, [currentScene, aiResult.basicSearchPoints])
+
+  // ============================================================
+  // 🎯 寻回指数 (使用 AI 的 probability)
+  // ============================================================
   const [recoveryIndex, setRecoveryIndex] = useState("85.0")
   
-  // 客户端计算寻回指数
   useEffect(() => {
-    let base = 85
-    if (session.lossLocationCategory === 'outdoor') base -= 12
-    const index = Math.max(45, Math.min(89.5, base + (Math.random() * 4 - 2))).toFixed(1)
-    setRecoveryIndex(index)
-  }, [session.lossLocationCategory])
+    // 使用 AI 返回的真实概率
+    const aiProbability = aiResult.probability || 85;
+    setRecoveryIndex(aiProbability.toFixed(1));
+  }, [aiResult])
 
   const handleUnlock = () => {
     setLoadingPay(true)
@@ -315,8 +404,8 @@ export default function ReportPage() {
              <SceneIcon strokeWidth={0.5} className="w-56 h-56 text-blue-800/40" />
           </div>
 
-          {/* === 免费版：3个宏观验证点 (Macro Zones) === */}
-          {!isPaid && currentScene.macroZones.map((zone, i) => (
+          {/* === 免费版：3个常规排查区 (Basic Search Points) === */}
+          {!isPaid && dynamicMacroZones.map((zone, i) => (
             <div key={i} className="absolute" style={{ top: zone.t, left: zone.l }}>
               <div className="relative flex flex-col items-center justify-center -translate-x-1/2 -translate-y-1/2 group/zone">
                 {/* 呼吸光斑 (黄色=常规) */}
@@ -325,7 +414,7 @@ export default function ReportPage() {
                    <div className="w-1 h-1 bg-amber-500/50 rounded-full" />
                 </div>
                 <div className="absolute top-6 px-2 py-0.5 bg-amber-950/80 border border-amber-500/30 backdrop-blur-sm rounded text-[9px] font-bold text-amber-500 tracking-widest whitespace-nowrap z-10">
-                  {zone.label}
+                  直觉位置 {i + 1}
                 </div>
               </div>
             </div>
@@ -351,7 +440,7 @@ export default function ReportPage() {
              {!isPaid ? (
                <div className="flex items-center gap-2 text-[10px] text-amber-500 font-bold tracking-wide">
                  <ScanLine className="w-3 h-3" />
-                 已标记 3 个常规验证区 (MACRO-SCAN)
+                 3个常规排查区
                </div>
              ) : (
                <div className="flex items-center gap-2 text-[10px] text-red-400 font-bold tracking-wide">
@@ -420,21 +509,23 @@ export default function ReportPage() {
                <div className="p-4 bg-amber-950/10 border border-amber-500/20 rounded-lg">
                  <div className="flex items-center gap-2 mb-2 text-amber-500">
                    <CheckCircle2 className="w-4 h-4" />
-                   <h4 className="text-xs font-bold">宏观区域复核 (Surface Layer)</h4>
+                   <h4 className="text-xs font-bold">免费：基础排查清单</h4>
                   </div>
                  <p className="text-[10px] text-slate-400 mb-3">
-                   请确认以下常规区域是否已排查完毕：
+                   根据常识，你可能已经检查过以下位置：
                  </p>
                  <ul className="space-y-2 mb-3">
-                   {currentScene.macroZones.map((z, i) => (
-                     <li key={i} className="flex items-center gap-2 text-[10px] text-slate-500">
-                       <div className="w-1 h-1 bg-amber-500/50 rounded-full" />
-                       {z.label}
+                   {dynamicMacroZones.map((z, i) => (
+                     <li key={i} className="flex items-start gap-2 text-[10px] text-slate-400">
+                       <div className="w-4 h-4 shrink-0 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mt-0.5">
+                         <span className="text-[8px] text-amber-500 font-bold">{i + 1}</span>
+                       </div>
+                       <span className="flex-1">{z.label}</span>
                      </li>
                    ))}
                  </ul>
                  <div className="p-2 bg-amber-900/20 rounded text-[10px] text-amber-400/80 leading-relaxed border-l-2 border-amber-500/50">
-                   <strong>AI 判词：</strong> {content.macroReview}
+                   <strong>💡 AI 分析：</strong> {content.macroReview}
                   </div>
                 </div>
              )}

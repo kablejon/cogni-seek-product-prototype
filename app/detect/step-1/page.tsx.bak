@@ -17,8 +17,8 @@ import {
   OtherItemsIcon
 } from "@/components/ui/holographic-icons"
 
-// ✅ 引入新抽取的配置（原配置已移至 lib/config/）
-import { ITEM_MAPPING_CONFIG } from "@/lib/config/items"
+// ✅ 引入新抽取的配置
+import { ITEM_MAPPING_CONFIG, type ItemConfig } from "@/lib/config/items"
 import { COLOR_ORBS } from "@/lib/config/colors"
 
 // 全息图标映射
@@ -32,203 +32,504 @@ const HOLOGRAPHIC_ICONS = {
 }
 
 // 能量球颜色选择器（3D Orbs）- 已移至 lib/config/colors.ts
-/* 原配置已注释，现使用外部导入
-const COLOR_ORBS_OLD = [
-  { 
-    id: 'black', 
-    label: '黑色', 
-    type: 'solid',
-    gradient: 'radial-gradient(circle at 30% 30%, #3a3a3a, #0a0a0a)'
-  },
-  { 
-    id: 'white', 
-    label: '白色', 
-    type: 'solid',
-    gradient: 'radial-gradient(circle at 30% 30%, #ffffff, #e8e8e8)'
-  },
-  { 
-    id: 'silver', 
-    label: '银/灰', 
-    type: 'solid',
-    gradient: 'radial-gradient(circle at 30% 30%, #d4d4d8, #71717a), linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.6) 45%, rgba(255,255,255,0.8) 50%, transparent 55%)'
-  },
-  { 
-    id: 'gold', 
-    label: '金/黄', 
-    type: 'solid',
-    gradient: 'radial-gradient(circle at 30% 30%, #fbbf24, #b45309), linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.5) 48%, rgba(255,255,255,0.7) 50%, transparent 52%)'
-  },
-  { 
-    id: 'red', 
-    label: '红色', 
-    type: 'solid',
-    gradient: 'radial-gradient(circle at 30% 30%, #f87171, #991b1b)'
-  },
-  { 
-    id: 'pink', 
-    label: '粉色', 
-    type: 'solid',
-    gradient: 'radial-gradient(circle at 30% 30%, #fda4af, #be185d)'
-  },
-  { 
-    id: 'orange', 
-    label: '橙色', 
-    type: 'solid',
-    gradient: 'radial-gradient(circle at 30% 30%, #fb923c, #c2410c)'
-  },
-  { 
-    id: 'brown', 
-    label: '棕/咖', 
-    type: 'solid',
-    gradient: 'radial-gradient(circle at 30% 30%, #a16207, #451a03)'
-  },
-  { 
-    id: 'green', 
-    label: '绿色', 
-    type: 'solid',
-    gradient: 'radial-gradient(circle at 30% 30%, #4ade80, #15803d)'
-  },
-  { 
-    id: 'blue', 
-    label: '蓝色', 
-    type: 'solid',
-    gradient: 'radial-gradient(circle at 30% 30%, #60a5fa, #1e3a8a)'
-  },
-  { 
-    id: 'purple', 
-    label: '紫色', 
-    type: 'solid',
-    gradient: 'radial-gradient(circle at 30% 30%, #a78bfa, #5b21b6)'
-  },
-  { 
-    id: 'multicolor', 
-    label: '多色', 
-    type: 'nebula'
-  },
-  { 
-    id: 'transparent', 
-    label: '透明', 
-    type: 'glass'
-  },
-  { 
-    id: 'other', 
-    label: '其他', 
-    type: 'custom'
-  },
-]
-*/
+// 物品映射配置 - 已移至 lib/config/items.ts
 
-// ========== 全量数据映射配置（38场景） - 已移至 lib/config/items.ts ==========
-/* 原配置已注释，现使用外部导入
-interface ItemConfig {
-  tags: string[]
-  hideSize: boolean
-  hideColor: boolean
-  defaultSize?: string
+// ========== 原配置已移至 lib/config/ ==========
+
+export default function Step1Page() {
+  const router = useRouter()
+  const { session, updateSession } = useSearchStore()
+  
+  const [selectedCategory, setSelectedCategory] = useState<string>(session.itemCategory || '')
+  const [selectedItem, setSelectedItem] = useState<string>(session.itemName || '')
+  const [itemCustomName, setItemCustomName] = useState<string>('')
+  const [itemColor, setItemColor] = useState<string>(session.itemColor || '')
+  const [customColorText, setCustomColorText] = useState<string>('')
+  const [itemFeatures, setItemFeatures] = useState<string>(session.itemFeatures || '')
+  const [selectedFeatureTags, setSelectedFeatureTags] = useState<string[]>([])
+  const [itemSize, setItemSize] = useState<string>('')
+  const [customSizeText, setCustomSizeText] = useState<string>('')
+  
+  // 自定义物品管理（按类别隔离）
+  const [customItemsByCategory, setCustomItemsByCategory] = useState<Record<string, string[]>>({})
+  const [showCustomItemInput, setShowCustomItemInput] = useState(false)
+  const [customItemText, setCustomItemText] = useState('')
+  
+  // 获取当前类别的自定义物品
+  const currentCategoryCustomItems = customItemsByCategory[selectedCategory] || []
+
+  // 获取当前物品的配置
+  const currentConfig = ITEM_MAPPING_CONFIG[selectedItem] || ITEM_MAPPING_CONFIG['completely_other']
+
+  // 当选择物品时，自动处理尺寸和颜色
+  useEffect(() => {
+    if (selectedItem && currentConfig) {
+      // 处理尺寸自动赋值
+      if (currentConfig.hideSize && currentConfig.defaultSize) {
+        setItemSize(currentConfig.defaultSize)
+      } else if (!currentConfig.hideSize) {
+        setItemSize('')
+      }
+      
+      // 清空特征标签选择
+      setSelectedFeatureTags([])
+      setItemFeatures('')
+    }
+  }, [selectedItem, currentConfig])
+
+  // 获取当前物品的特征标签
+  const getFeatureTags = () => {
+    return currentConfig?.tags || []
+  }
+
+  // 处理特征标签点击
+  const handleTagClick = (tag: string) => {
+    if (!itemFeatures.includes(tag)) {
+      setItemFeatures(itemFeatures ? `${itemFeatures} ${tag}` : tag)
+    }
+    if (!selectedFeatureTags.includes(tag)) {
+      setSelectedFeatureTags([...selectedFeatureTags, tag])
+    }
+  }
+
+  // 添加自定义物品（按当前类别）
+  const addCustomItem = () => {
+    if (customItemText.trim() && selectedCategory) {
+      const newItem = customItemText.trim()
+      const currentItems = customItemsByCategory[selectedCategory] || []
+      
+      setCustomItemsByCategory({
+        ...customItemsByCategory,
+        [selectedCategory]: [...currentItems, newItem]
+      })
+      
+      setItemCustomName(newItem)
+      setSelectedItem('custom_item')
+      setCustomItemText('')
+      setShowCustomItemInput(false)
+    }
+  }
+
+  // 删除自定义物品（按当前类别）
+  const removeCustomItem = (item: string) => {
+    if (selectedCategory) {
+      const currentItems = customItemsByCategory[selectedCategory] || []
+      
+      setCustomItemsByCategory({
+        ...customItemsByCategory,
+        [selectedCategory]: currentItems.filter(i => i !== item)
+      })
+      
+      if (itemCustomName === item) {
+        setItemCustomName('')
+        setSelectedItem('')
+      }
+    }
+  }
+
+  // 是否显示尺寸选择器
+  const showSizeSelector = !currentConfig?.hideSize
+  // 是否显示颜色选择器
+  const showColorSelector = !currentConfig?.hideColor
+
+  // 是否显示自定义物品输入框
+  const needsCustomInput = selectedItem.endsWith('_other') || selectedItem === 'completely_other'
+
+  // 处理物品选择
+  const handleItemSelect = (itemId: string) => {
+    setSelectedItem(itemId)
+    setItemCustomName('')
+    
+    if (itemId.endsWith('_other') || itemId === 'completely_other') {
+      setShowCustomItemInput(true)
+    } else {
+      setShowCustomItemInput(false)
+    }
+  }
+
+  // 验证是否可以继续
+  const canProceed = selectedCategory && selectedItem &&
+    ((!selectedItem.endsWith('_other') && selectedItem !== 'completely_other') || (itemCustomName && itemCustomName.trim())) &&
+    (!showColorSelector || (itemColor && (itemColor !== 'other' || (customColorText && customColorText.trim())))) &&
+    (!showSizeSelector || (itemSize && (itemSize !== 'custom' || (customSizeText && customSizeText.trim()))))
+
+  // 获取缺少的必填项提示（按优先级）
+  const getMissingRequirement = (): string | null => {
+    if (!selectedCategory) {
+      return "请选择物品类别"
+    }
+    if (!selectedItem) {
+      return "请选择具体物品"
+    }
+    if ((selectedItem.endsWith('_other') || selectedItem === 'completely_other') && (!itemCustomName || !itemCustomName.trim())) {
+      return "请输入自定义物品名称"
+    }
+    if (showColorSelector && !itemColor) {
+      return "请选择物品颜色"
+    }
+    if (showColorSelector && itemColor === 'other' && (!customColorText || !customColorText.trim())) {
+      return "请输入自定义颜色"
+    }
+    if (showSizeSelector && !itemSize) {
+      return "请选择物品尺寸"
+    }
+    if (showSizeSelector && itemSize === 'custom' && (!customSizeText || !customSizeText.trim())) {
+      return "请输入自定义尺寸"
+    }
+    return null
+  }
+
+  const handleContinue = () => {
+    if (!canProceed) return
+
+    const finalItemName = (selectedItem.endsWith('_other') || selectedItem === 'completely_other')
+      ? itemCustomName
+      : (itemCategories.find(c => c.id === selectedCategory)?.items.find(i => i.id === selectedItem)?.label || selectedItem)
+
+    const finalColor = itemColor === 'other' ? customColorText : itemColor
+    const finalSize = itemSize === 'custom' ? customSizeText : itemSize
+
+    updateSession({
+      itemCategory: selectedCategory,
+      itemName: finalItemName,
+      itemFeatures,
+      itemColor: finalColor,
+      itemSize: finalSize as 'small' | 'medium' | 'large',
+    })
+    
+    router.push('/detect/step-2')
+  }
+
+  const handleBack = () => {
+    router.push('/detect/step-0')
+  }
+
+  // 分类图标映射
+  const getCategoryIcon = (categoryId: string) => {
+    const Icon = HOLOGRAPHIC_ICONS[categoryId as keyof typeof HOLOGRAPHIC_ICONS] || OtherItemsIcon
+    return <Icon className="w-full h-full" />
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white overflow-hidden relative">
+      <InteractiveFog 
+        color1="rgba(59, 130, 246, 0.03)"
+        color2="rgba(147, 51, 234, 0.03)"
+        color3="rgba(236, 72, 153, 0.02)"
+      />
+
+      <Header currentStep={1} />
+
+      {/* 主内容区域 */}
+      <div className="relative z-10 max-w-4xl mx-auto px-4 py-8 space-y-8">
+        
+        {/* 标题 */}
+        <div className="text-center space-y-2">
+          <h1 className="text-2xl md:text-3xl font-bold">物品侦察</h1>
+          <p className="text-base md:text-lg text-white/70">告诉我，你丢失的是什么？</p>
+        </div>
+
+        {/* 1. 物品分类选择 - 六边形网格 */}
+        <div className="bg-white/5 backdrop-blur-md p-6 md:p-8 rounded-2xl border border-white/10 shadow-2xl">
+          <h2 className="font-bold text-base md:text-lg mb-6">1. 物品类别</h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {itemCategories.map((category) => (
+              <button
+                key={category.id}
+                onClick={() => {
+                  setSelectedCategory(category.id)
+                  setSelectedItem('')
+                  setItemCustomName('')
+                  setShowCustomItemInput(false)
+                }}
+                className={`
+                  relative group h-32 rounded-xl p-4 transition-all duration-300
+                  ${selectedCategory === category.id 
+                    ? 'bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border-2 border-cyan-400 shadow-lg shadow-cyan-500/20' 
+                    : 'bg-white/5 border border-white/10 hover:bg-white/10 hover:border-cyan-400/50'
+                  }
+                `}
+              >
+                <div className="flex flex-col items-center justify-center h-full gap-2">
+                  <div className={`
+                    w-12 h-12 transition-all duration-300
+                    ${selectedCategory === category.id ? 'text-cyan-400 scale-110' : 'text-white/60 group-hover:text-cyan-400/70 group-hover:scale-105'}
+                  `}>
+                    {getCategoryIcon(category.id)}
+                  </div>
+                  <span className="text-sm font-medium">{category.name}</span>
+                </div>
+                {selectedCategory === category.id && (
+                  <div className="absolute top-2 right-2">
+                    <Check className="w-5 h-5 text-cyan-400" />
+                  </div>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 2. 具体物品选择 */}
+        {selectedCategory && (
+          <div className="bg-white/5 backdrop-blur-md p-6 md:p-8 rounded-2xl border border-white/10 shadow-2xl animate-fade-in-up">
+            <h2 className="font-bold text-base md:text-lg mb-4">2. 具体物品</h2>
+            <div className="flex flex-wrap gap-2">
+              {/* 先显示所有非"其他"的预设选项 */}
+              {itemCategories.find(c => c.id === selectedCategory)?.items.filter(item => 
+                !item.id.endsWith('_other') && item.id !== 'completely_other'
+              ).map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => handleItemSelect(item.id)}
+                  className={`chip ${selectedItem === item.id ? 'chip-selected' : ''}`}
+                >
+                  {item.label}
+                  {selectedItem === item.id && <Check className="w-3 h-3 ml-1" />}
+                </button>
+              ))}
+
+              {/* 显示已保存的自定义物品（当前类别） */}
+              {currentCategoryCustomItems.map((customItem) => (
+                <div key={customItem} className="relative group">
+                  <button
+                    onClick={() => {
+                      setSelectedItem('custom_item')
+                      setItemCustomName(customItem)
+                      setShowCustomItemInput(false)
+                    }}
+                    className={`chip ${itemCustomName === customItem ? 'chip-selected' : ''}`}
+                  >
+                    {customItem}
+                    {itemCustomName === customItem && <Check className="w-3 h-3 ml-1" />}
+                  </button>
+                  <button
+                    onClick={() => removeCustomItem(customItem)}
+                    className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-red-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+
+              {/* 最后显示"其他"选项（输入框或按钮），始终在最右边 */}
+              {itemCategories.find(c => c.id === selectedCategory)?.items.filter(item => 
+                item.id.endsWith('_other') || item.id === 'completely_other'
+              ).map((item) => {
+                // 如果是"其他"选项，检查是否应该显示输入框
+                if (showCustomItemInput) {
+                  return (
+                    <input
+                      key={item.id}
+                      type="text"
+                      value={customItemText}
+                      onChange={(e) => setCustomItemText(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          addCustomItem()
+                        }
+                      }}
+                      onBlur={() => {
+                        if (customItemText.trim()) {
+                          addCustomItem()
+                        } else {
+                          setShowCustomItemInput(false)
+                          setSelectedItem('')
+                        }
+                      }}
+                      placeholder="输入物品名称..."
+                      className="chip border-2 border-cyan-400 bg-cyan-500/10 focus:outline-none"
+                      autoFocus
+                    />
+                  )
+                }
+
+                // 否则显示"其他"按钮
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => handleItemSelect(item.id)}
+                    className={`chip ${selectedItem === item.id ? 'chip-selected' : ''}`}
+                  >
+                    {item.label}
+                    {selectedItem === item.id && <Check className="w-3 h-3 ml-1" />}
+                  </button>
+                )
+              })}
+            </div>
+
+            {/* 如果选择了需要自定义名称的物品，且不是通过输入框模式，显示文本输入 */}
+            {needsCustomInput && !showCustomItemInput && (
+              <div className="mt-4">
+                <input
+                  type="text"
+                  value={itemCustomName}
+                  onChange={(e) => setItemCustomName(e.target.value)}
+                  placeholder="请输入具体名称..."
+                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/20 focus:border-cyan-400 focus:outline-none"
+                />
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* 3. 特征标签 */}
+        {selectedItem && !needsCustomInput && getFeatureTags().length > 0 && (
+          <div className="bg-white/5 backdrop-blur-md p-6 md:p-8 rounded-2xl border border-white/10 shadow-2xl animate-fade-in-up">
+            <h2 className="font-bold text-base md:text-lg mb-2">3. 特征描述</h2>
+            <span className="text-xs text-white/50 mb-4 block">可多选</span>
+            <div className="flex flex-wrap gap-2 mb-4">
+              {getFeatureTags().map((tag: string) => (
+                <button
+                  key={tag}
+                  onClick={() => handleTagClick(tag)}
+                  className={`chip ${selectedFeatureTags.includes(tag) ? 'chip-selected' : ''}`}
+                >
+                  {tag}
+                  {selectedFeatureTags.includes(tag) && <Check className="w-3 h-3 ml-1" />}
+                </button>
+              ))}
+            </div>
+            <textarea
+              value={itemFeatures}
+              onChange={(e) => setItemFeatures(e.target.value)}
+              placeholder="或手动输入其他特征..."
+              className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/20 focus:border-cyan-400 focus:outline-none resize-none"
+              rows={2}
+            />
+          </div>
+        )}
+
+        {/* 4. 颜色选择 */}
+        {selectedItem && showColorSelector && (
+          <div className="bg-white/5 backdrop-blur-md p-6 md:p-8 rounded-2xl border border-white/10 shadow-2xl animate-fade-in-up">
+            <h2 className="font-bold text-base md:text-lg mb-4">4. 颜色</h2>
+            <div className="grid grid-cols-4 md:grid-cols-6 gap-3">
+              {COLOR_ORBS.map((orb) => (
+                <button
+                  key={orb.id}
+                  onClick={() => setItemColor(orb.id)}
+                  className={`
+                    relative aspect-square rounded-xl transition-all duration-300
+                    ${itemColor === orb.id 
+                      ? 'ring-2 ring-offset-2 ring-offset-slate-900 ring-cyan-400 scale-110' 
+                      : 'hover:scale-105'
+                    }
+                  `}
+                  style={{
+                    background: orb.gradient,
+                  }}
+                >
+                  {itemColor === orb.id && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Check className="w-6 h-6 text-white drop-shadow-lg" />
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+            {itemColor === 'other' && (
+              <input
+                type="text"
+                value={customColorText}
+                onChange={(e) => setCustomColorText(e.target.value)}
+                placeholder="请输入具体颜色..."
+                className="w-full mt-4 px-4 py-3 rounded-xl bg-white/5 border border-white/20 focus:border-cyan-400 focus:outline-none"
+              />
+            )}
+          </div>
+        )}
+
+        {/* 5. 尺寸选择 */}
+        {selectedItem && showSizeSelector && (
+          <div className="bg-white/5 backdrop-blur-md p-6 md:p-8 rounded-2xl border border-white/10 shadow-2xl animate-fade-in-up">
+            <h2 className="font-bold text-base md:text-lg mb-4">5. 尺寸</h2>
+            <div className="grid grid-cols-4 gap-3">
+              {[
+                { id: 'small', label: '小', size: 'w-12 h-12' },
+                { id: 'medium', label: '中', size: 'w-16 h-16' },
+                { id: 'large', label: '大', size: 'w-20 h-20' },
+                { id: 'custom', label: '自定义', size: 'w-16 h-16' },
+              ].map((size) => (
+                <button
+                  key={size.id}
+                  onClick={() => setItemSize(size.id)}
+                  className={`
+                    flex flex-col items-center justify-center p-4 rounded-xl transition-all duration-300
+                    ${itemSize === size.id 
+                      ? 'bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border-2 border-cyan-400' 
+                      : 'bg-white/5 border border-white/10 hover:bg-white/10'
+                    }
+                  `}
+                >
+                  <div className={`${size.size} rounded-lg bg-white/10 mb-2`} />
+                  <span className="text-sm">{size.label}</span>
+                </button>
+              ))}
+            </div>
+            {itemSize === 'custom' && (
+              <input
+                type="text"
+                value={customSizeText}
+                onChange={(e) => setCustomSizeText(e.target.value)}
+                placeholder="请输入具体尺寸..."
+                className="w-full mt-4 px-4 py-3 rounded-xl bg-white/5 border border-white/20 focus:border-cyan-400 focus:outline-none"
+              />
+            )}
+          </div>
+        )}
+
+        {/* 导航按钮 */}
+        <div className="flex gap-4 justify-between">
+          <Button
+            onClick={handleBack}
+            variant="outline"
+            className="flex-1 rounded-full border-white/20 hover:bg-white/10"
+          >
+            <ChevronLeft className="w-4 h-4 mr-1" />
+            上一步
+          </Button>
+          <div className="relative flex-1 group">
+            <Button
+              onClick={handleContinue}
+              disabled={!canProceed}
+              className="w-full rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              继续下一步
+              <ChevronRight className="w-4 h-4 ml-1" />
+            </Button>
+            {!canProceed && getMissingRequirement() && (
+              <div className="absolute -top-12 left-1/2 -translate-x-1/2 px-4 py-2 bg-slate-800 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 border border-cyan-400/30">
+                {getMissingRequirement()}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <style jsx>{`
+        .chip {
+          @apply px-4 py-2 rounded-full bg-white/5 border border-white/20 hover:bg-white/10 hover:border-cyan-400/50 transition-all duration-200 text-sm flex items-center;
+        }
+        .chip-selected {
+          @apply bg-gradient-to-r from-cyan-500/20 to-blue-600/20 border-cyan-400 text-cyan-400;
+        }
+        @keyframes fade-in-up {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-fade-in-up {
+          animation: fade-in-up 0.5s ease-out;
+        }
+      `}</style>
+    </div>
+  )
 }
-
-const ITEM_MAPPING_CONFIG: Record<string, ItemConfig> = {
-  // 1. 日常必需品
-  'keys': {
-    tags: ['一大串', '带门禁卡', '有公仔挂件', '车钥匙', '单把钥匙'],
-    hideSize: true,
-    hideColor: false,
-    defaultSize: 'small'
-  },
-  'wallet': {
-    tags: ['长款', '短款折叠', '鼓鼓的', '带拉链', '名片夹'],
-    hideSize: true,
-    hideColor: false,
-    defaultSize: 'small'
-  },
-  'glasses': {
-    tags: ['有眼镜盒', '镜腿折断', '金属框', '黑框', '隐形眼镜'],
-    hideSize: true,
-    hideColor: false,
-    defaultSize: 'small'
-  },
-  'watch': {
-    tags: ['智能手表', '机械表', '表带断裂', '没电了', '屏幕碎了'],
-    hideSize: true,
-    hideColor: false,
-    defaultSize: 'small'
-  },
-  'umbrella': {
-    tags: ['长柄伞', '折叠伞', '透明伞', '便利店伞', '很旧'],
-    hideSize: true,
-    hideColor: false,
-    defaultSize: 'medium'
-  },
-  'daily_other': {
-    tags: ['刚买的', '借来的', '有特殊包装'],
-    hideSize: false,
-    hideColor: false,
-  },
-
-  // 2. 数码产品
-  'phone': {
-    tags: ['🔕 静音/震动', '🔋 没电关机', '💥 屏幕碎裂', '📲 戴手机壳'],
-    hideSize: true,
-    hideColor: false,
-    defaultSize: 'medium'
-  },
-  'airpods': {
-    tags: ['🎧 头戴式', '💊 仅耳机仓', '👂 仅左耳', '👂 仅右耳', '带保护套'],
-    hideSize: true,
-    hideColor: false,
-    defaultSize: 'small'
-  },
-  'tablet': {
-    tags: ['带键盘套', '有贴纸', '屏幕碎裂', '手写笔也在'],
-    hideSize: true,
-    hideColor: false,
-    defaultSize: 'medium'
-  },
-  'laptop': {
-    tags: ['装在内胆包', '贴满贴纸', '电源线也在', '休眠状态'],
-    hideSize: true,
-    hideColor: false,
-    defaultSize: 'large'
-  },
-  'powerbank': {
-    tags: ['自带线', '很重/大砖头', '磁吸式', '借用共享的'],
-    hideSize: true,
-    hideColor: false,
-    defaultSize: 'medium'
-  },
-  'cable': {
-    tags: ['一团乱', '带插头', '很长', '原装白色'],
-    hideSize: true,
-    hideColor: false,
-    defaultSize: 'small'
-  },
-  'usb': {
-    tags: ['带盖子', '挂在绳上', '有很多重要数据', '金属外壳'],
-    hideSize: true,
-    hideColor: false,
-    defaultSize: 'small'
-  },
-  'remote': {
-    tags: ['电视遥控', '空调遥控', '车库遥控', '按键失灵'],
-    hideSize: true,
-    hideColor: false,
-    defaultSize: 'small'
-  },
-  'camera': {
-    tags: ['单反/微单', '卡片机', '镜头盖没盖', '在相机包里'],
-    hideSize: true,
-    hideColor: false,
-    defaultSize: 'medium'
-  },
-  'digital_other': {
-    tags: ['有指示灯', '正在运行', '刚买的'],
-    hideSize: false,
-    hideColor: false,
-  },
-
-  // 3. 证件文件
-  'id_card': {
-    tags: ['💳 有卡套', '👜 在钱包里', '🗂 和其他证件一起', '临时身份证'],
     hideSize: true,
     hideColor: true, // 隐藏颜色
     defaultSize: 'card'
@@ -375,15 +676,14 @@ const ITEM_MAPPING_CONFIG: Record<string, ItemConfig> = {
     hideColor: false,
   }
 }
-*/
 
 export default function Step1Page() {
   const router = useRouter()
   const { session, updateSession } = useSearchStore()
   
   const [selectedCategory, setSelectedCategory] = useState<string>(session.itemCategory || '')
-  const [selectedItem, setSelectedItem] = useState<string>(session.itemName || '')
-  const [itemCustomName, setItemCustomName] = useState<string>('')
+  const [selectedItem, setSelectedItem] = useState<string>(session.itemType || '')
+  const [itemCustomName, setItemCustomName] = useState<string>(session.itemCustomName || '')
   const [itemColor, setItemColor] = useState<string>(session.itemColor || '')
   const [customColorText, setCustomColorText] = useState<string>('')
   const [itemFeatures, setItemFeatures] = useState<string>(session.itemFeatures || '')
@@ -519,16 +819,13 @@ export default function Step1Page() {
 
   const handleNext = () => {
     if (canProceed) {
-      const finalItemName = (selectedItem.endsWith('_other') || selectedItem === 'completely_other')
-        ? itemCustomName
-        : (itemCategories.find(c => c.id === selectedCategory)?.items.find(i => i.id === selectedItem)?.label || selectedItem)
-
       updateSession({
         itemCategory: selectedCategory,
-        itemName: finalItemName,
+        itemType: selectedItem,
+        itemCustomName: itemCustomName,
         itemColor: showColorSelector ? (itemColor === 'other' ? customColorText : itemColor) : 'N/A',
         itemFeatures: itemFeatures,
-        itemSize: (showSizeSelector && itemSize === 'custom' ? customSizeText : itemSize) as 'small' | 'medium' | 'large',
+        itemSize: showSizeSelector && itemSize === 'custom' ? customSizeText : itemSize,
       })
       router.push("/detect/step-2")
     }

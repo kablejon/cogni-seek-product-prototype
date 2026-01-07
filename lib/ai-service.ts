@@ -32,6 +32,7 @@ export interface AIAnalysisResult {
   behaviorAnalysis: string;
   environmentAnalysis: string;
   timelineAnalysis: string;
+  basicSearchPoints: string[]; // 免费：3个常规排查点
   checklist: string[];
   cognitiveOverride: string;
   stopCondition: string;
@@ -41,29 +42,37 @@ export interface AIAnalysisResult {
 // ==================== 辅助函数 ====================
 
 function getItemDisplayName(session: SearchSession): string {
-  if (session.itemCustomName) return session.itemCustomName;
+  // ✅ 直接使用 session.itemName（step-1 保存的值）
+  if (session.itemName) return session.itemName;
+  
+  // 备用：从 category 中查找
   const category = itemCategories.find(c => c.id === session.itemCategory);
-  const item = category?.items.find(i => i.id === session.itemType);
+  const item = category?.items.find(i => i.id === session.itemName);
   return item?.label || '物品';
 }
 
 function getLocationDisplayName(session: SearchSession): string {
-  if (session.locationCustom) return session.locationCustom;
-  const category = locationCategories.find(c => c.id === session.locationCategory);
-  const location = category?.subLocations.find(l => l.id === session.specificLocation);
-  return location?.label || category?.label || '';
+  // ✅ 修复：使用正确的字段名
+  if (session.lossLocationCustom) return session.lossLocationCustom;
+  
+  // 使用 lossLocation 或从 lossLocationCategory 查找
+  if (session.lossLocation) return session.lossLocation;
+  
+  const category = locationCategories.find(c => c.id === session.lossLocationCategory);
+  return category?.label || session.lossLocationCategory || '未知位置';
 }
 
 function getActivityDisplayName(session: SearchSession): string {
-  if (session.activityCustom) return session.activityCustom;
-  const category = activityCategories.find(c => c.id === session.activityCategory);
-  const activity = category?.activities.find(a => a.id === session.specificActivity);
-  return activity?.label || '';
+  // ✅ 修复：使用 userActivity
+  return session.userActivity || '日常活动';
 }
 
 function getMoodDisplayInfo(session: SearchSession): { label: string; icon: string } {
-  if (session.moodCustom) return { label: session.moodCustom, icon: '❓' };
-  const mood = moodOptions.find(m => m.id === session.mood);
+  // ✅ 修复：使用 userMood
+  if (session.userMood) return { label: session.userMood, icon: '🧠' };
+  
+  // 备用：从 moodOptions 查找
+  const mood = moodOptions.find(m => m.id === session.userMood);
   return { label: mood?.label || '', icon: mood?.icon || '' };
 }
 
@@ -261,29 +270,52 @@ Return ONLY valid JSON. No markdown formatting, no explanations.`;
 // ==================== API 调用 ====================
 
 export async function analyzeWithAI(session: SearchSession): Promise<AIAnalysisResult> {
-  console.log('开始 AI 分析...');
-  const prompt = buildAnalysisPrompt(session);
-  console.log('Prompt 构建完成，长度:', prompt.length);
+  console.log('=== 🚀 开始 AI 分析 ===');
+  
+  const itemName = getItemDisplayName(session);
+  const locationName = getLocationDisplayName(session);
+  const activityName = getActivityDisplayName(session);
+  const mood = getMoodDisplayInfo(session);
 
   try {
+    // ✅ 使用新的 API Route 期望的格式
+    const requestBody = {
+      itemType: session.itemCategory || '',
+      itemName: itemName,
+      itemDescription: session.itemFeatures || '',
+      itemColor: session.itemColor || '',
+      itemSize: session.itemSize || '',
+      lastSeenLocation: locationName,
+      lastSeenTime: session.lossTime || '',
+      lossLocationCategory: session.lossLocationCategory || '',
+      lossLocationSubCategory: (session.lossLocationSubCategory || []).join(' '),
+      activity: activityName,
+      mood: mood.label,
+      userMood: session.userMood || '',
+      userActivity: session.userActivity || '',
+      searchedPlaces: [...(session.searchedLocations || []), ...(session.searchedCustomLocations || [])].join(', '),
+    };
+
+    console.log('📤 发送请求到 API:', JSON.stringify(requestBody, null, 2));
+
     const response = await fetch('/api/analyze', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ prompt }),
+      body: JSON.stringify(requestBody),
     });
 
-    console.log('API 响应状态:', response.status);
+    console.log('📡 API 响应状态:', response.status);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      console.error('API 错误:', errorData);
+      console.error('❌ API 错误:', errorData);
       throw new Error(errorData.error || 'AI 分析请求失败');
     }
 
     const data = await response.json();
-    console.log('AI 分析成功');
+    console.log('✅ AI 分析成功:', data);
     
     if (!data.result) {
       throw new Error('返回数据格式异常');
@@ -291,7 +323,7 @@ export async function analyzeWithAI(session: SearchSession): Promise<AIAnalysisR
     
     return data.result;
   } catch (error) {
-    console.error('AI 分析调用失败:', error);
+    console.error('❌ AI 分析调用失败:', error);
     throw error;
   }
 }
@@ -341,6 +373,11 @@ export function getDefaultAnalysisResult(session: SearchSession): AIAnalysisResu
     behaviorAnalysis: `在你当时的活动状态下，大脑处于"认知卸载"模式。${itemName}很可能被无意识地放置在你移动路径上的某个停留点。这不是遗忘，而是大脑为了节省认知资源而进行的自动化行为。`,
     environmentAnalysis: `${locationName}存在多个典型的视觉盲区：1) 与背景颜色相近的区域（色彩融合）；2) 视线水平以上或以下的空间（垂直盲区）；3) 物品堆叠区域的底层（遮挡盲区）。`,
     timelineAnalysis: `根据时间线推测，${itemName}最可能在你进行其他活动的过渡时刻被放下。当注意力从物品转移到新任务时，手部会自动完成放置动作，但大脑不会记录具体位置。`,
+    basicSearchPoints: [
+      `${locationName}的表面和可见区域`,
+      '桌面、台面等最后使用物品的区域',
+      '地面开阔区域（掉落的第一反应位置）',
+    ],
     checklist: [
       `⚡ PRIORITY: 趴在地上用手机闪光灯扫描${locationName}所有家具底部`,
       `🔦 在${locationName}用闪光灯低角度照射，寻找${itemName}的反光或投射阴影`,
