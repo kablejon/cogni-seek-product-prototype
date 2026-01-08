@@ -48,7 +48,7 @@ export default function ResultPage() {
       return {
         icon: '🦎',
         title: '伪装警告（视觉伪装）',
-        content: '目标物品颜色与环境发生【光谱融合】。在当前光线下，人眼识别率降低至 15%。需采用逆向视觉排查。',
+        content: '目标物品颜色与环境发生【光谱融合】。简单说，它和背景"撞色"了，变成了"保护色"。在当前光线下，人眼识别率降低至 15%。需采用逆向视觉排查。',
         color: '#2DE1FC'
       }
     }
@@ -122,7 +122,7 @@ export default function ResultPage() {
           <div className="bg-card rounded-3xl border border-border/50 p-8 md:p-12 card-shadow text-center space-y-6">
             <div>
               <h1 className="text-3xl md:text-4xl font-bold mb-2">
-                AI 寻回概率评估：<span className="text-[#2DE1FC]">极高</span>
+                逻辑推演成功率：<span className="text-[#2DE1FC]">极高</span>
               </h1>
               <p className="text-sm text-muted-foreground">基于 15000+ 成功案例的综合推演</p>
             </div>
@@ -178,7 +178,7 @@ export default function ResultPage() {
                     }}>
                       {meterValue.toFixed(1)}%
                     </div>
-                    <div className="text-sm text-muted-foreground">找回概率</div>
+                    <div className="text-sm text-muted-foreground">推演置信度</div>
                   </div>
                 </div>
               </div>
@@ -313,7 +313,7 @@ export default function ResultPage() {
                 className="rounded-full px-12 text-lg font-bold bg-gradient-to-r from-[#2DE1FC] to-[#10b981] hover:shadow-[0_0_30px_rgba(45,225,252,0.5)] transition-all"
                 onClick={() => router.push('/detect/report')}
               >
-                立即解锁完整报告
+                获取盲区坐标 & 逆向搜寻战术
               </Button>
 
               <p className="text-sm text-muted-foreground flex items-center justify-center gap-2">
@@ -335,7 +335,7 @@ export default function ResultPage() {
             </div>
             <div className="flex items-center gap-2">
               <span className="text-[#10b981]">✓</span>
-              <span>30天退款保证</span>
+              <span>无效免费复盘</span>
             </div>
           </div>
         </div>
